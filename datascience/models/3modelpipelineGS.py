@@ -2,8 +2,6 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from utils_yose import make_features
-
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder, PowerTransformer
@@ -14,7 +12,17 @@ from sklearn.ensemble import RandomForestRegressor
 import lightgbm as lgb
 
 from sklearn.metrics import mean_squared_error
+
 import joblib
+
+try:
+    from ..utils_yose import build_preprocessor
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    from datascience.utils_yose import make_features  # absolute import after adjusting sys.path
+
 
 warnings.filterwarnings('ignore')
 pd.set_option('display.float_format', lambda x: '%.5f' % x)
@@ -135,3 +143,4 @@ print(f"\nMejor modelo por hold‑out: {best_name} | RMSE: {best_rmse:.5f}")
 
 joblib.dump(best_gs.best_estimator_, "data/models/housing/best_houseprice_pipeline.joblib")
 print('Modelo guardado.')
+
