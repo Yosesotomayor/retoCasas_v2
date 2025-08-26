@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, World!</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+      <h1 class="title">Hello World! </h1>
+      <p id="currentTime"></p>
+      <script src="script.js"></script>
+  </body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro • House Price Insights</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --yellow:#FFD43B;
+      --yellow-dk:#E6BD2F;
+      --ink:#1A1A1A;
+      --bg:#F4F4F6;
+      --card:#FFFFFF;
+      --muted:#9FA4AD;
+      --link:#2C3E50;
+      --ok:#27AE60;
+      --err:#E74C3C;
+      --radius:14px;
+      --shadow:0 10px 26px rgba(0,0,0,.10);
+      --shadow-sm:0 4px 12px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 600px at 70% -100px, rgba(255,212,59,.20), transparent 60%),
+        var(--bg);
+    }
+
+    /* Top bar */
+    .topbar{
+      height:56px;
+      background:#2b2b2b;
+      display:flex;align-items:center;gap:12px;
+      padding:0 20px;color:#fff;
+      box-shadow:var(--shadow-sm);
+    }
+    .home{
+      width:28px;height:28px;border-radius:7px;
+      background:#fff;mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24"><path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z"/></svg>') center/20px no-repeat;
+    }
+
+    /* Layout */
+    .wrap{
+      min-height:calc(100% - 56px);
+      display:grid;place-items:center;
+      padding:32px 16px;
+    }
+    .card{
+      width:min(420px, 92vw);
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:28px;
+      text-align:center;
+      animation:pop .3s ease-out;
+    }
+    @keyframes pop{from{transform:translateY(8px);opacity:.0} to{transform:none;opacity:1}}
+
+    .brand{
+      display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:8px;
+    }
+    .brand img{width:44px;height:auto}
+    .brand h1{
+      margin:0;font-size:18px;line-height:1.1;
+      letter-spacing:.4px;font-weight:800;text-transform:uppercase;
+    }
+    .tagline{margin:2px 0 18px;color:var(--muted);font-size:13px}
+
+    /* Form */
+    .field{margin:10px 0 12px;text-align:left}
+    label{display:block;margin:0 0 6px;font-size:13px;color:#4c4f56}
+    .input{
+      width:100%;padding:12px 14px;border-radius:10px;
+      border:1px solid #ddd;background:#F9F9F9;font-size:15px;
+      transition:border .15s, box-shadow .15s, background .15s;
+    }
+    .input:focus{
+      outline:none;border-color:var(--yellow);
+      box-shadow:0 0 0 3px rgba(255,212,59,.35);
+      background:#fff;
+    }
+    .row{display:flex;gap:10px}
+    .row .field{flex:1}
+
+    .hint{font-size:12px;color:var(--muted);margin-top:6px}
+
+    .btn{
+      width:100%;padding:13px 16px;border:0;border-radius:10px;
+      font-weight:800;text-transform:uppercase;letter-spacing:.7px;
+      background:var(--yellow);color:var(--ink);cursor:pointer;margin-top:8px;
+      transition:filter .15s, transform .02s, background .15s;
+    }
+    .btn:hover{background:var(--yellow-dk)}
+    .btn:active{transform:translateY(1px)}
+
+    .links{margin-top:18px;font-size:14px;color:#555}
+    .links a{color:var(--link);text-decoration:none}
+    .links a:hover{color:var(--yellow);text-decoration:underline}
+
+    .legal{margin-top:14px;font-size:12px;color:var(--muted)}
+    .legal a{color:inherit;text-decoration:underline}
+
+    /* Messages */
+    .msg{display:none;margin:8px 0 0;padding:10px 12px;border-radius:8px;font-size:13px}
+    .msg.ok{display:block;background:rgba(39,174,96,.10);color:#177a43;border:1px solid rgba(39,174,96,.25)}
+    .msg.err{display:block;background:rgba(231,76,60,.10);color:#9c2b1f;border:1px solid rgba(231,76,60,.25)}
+
+    @media (max-width:420px){
+      .card{padding:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="home" aria-hidden="true"></div>
+  </div>
+
+  <main class="wrap">
+    <section class="card" role="form" aria-labelledby="title">
+      <div class="brand">
+        <!-- Reemplaza esta URL por tu PNG transparente -->
+        <img src="YOUR_LOGO_URL.png" alt="House Price Insights logo">
+        <h1 id="title">House Price Insights</h1>
+      </div>
+      <p class="tagline">Descubre el valor real de tu vivienda</p>
+
+      <div id="msg" class="msg"></div>
+
+      <div class="field">
+        <label for="user">Usuario</label>
+        <input class="input" id="user" type="text" placeholder="Tu nombre de usuario" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label for="pass">Contraseña</label>
+        <input class="input" id="pass" type="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+        <div class="hint">Usa al menos 8 caracteres, una mayúscula y un número.</div>
+      </div>
+
+      <div class="field">
+        <label for="pass2">Confirma contraseña</label>
+        <input class="input" id="pass2" type="password" placeholder="Repítela" autocomplete="new-password" />
+      </div>
+
+      <button class="btn" id="submit">Registro</button>
+
+      <div class="links">
+        ¿Ya tienes cuenta? <a href="#">Inicia sesión</a> ·
+        <a href="#">Olvidé mi contraseña</a>
+      </div>
+
+      <div class="legal">
+        Al registrarte aceptas nuestros <a href="#">Términos</a> y <a href="#">Privacidad</a>.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Validación rápida
+    const $ = (q)=>document.querySelector(q);
+    const msg = $('#msg');
+    $('#submit').addEventListener('click', ()=>{
+      const u = $('#user').value.trim();
+      const p = $('#pass').value;
+      const p2 = $('#pass2').value;
+      if(!u || !p || !p2){
+        show('Completa todos los campos.','err'); return;
+      }
+      if(p.length<8 || !/[A-Z]/.test(p) || !/[0-9]/.test(p)){
+        show('La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.','err'); return;
+      }
+      if(p!==p2){ show('Las contraseñas no coinciden.','err'); return; }
+      show('¡Todo listo! Puedes continuar.','ok');
+      // Aquí dispara tu flujo real de registro (Bubble/Backend)
+    });
+    function show(text,type){
+      msg.textContent = text; msg.className = 'msg '+type;
+      msg.scrollIntoView({block:'center', behavior:'smooth'});
+    }
+  </script>
+</body>
+</html>
