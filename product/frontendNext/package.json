@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "next-auth": "^4.24.11",
+    "stripe": "^18.4.0"
+  }
+}
