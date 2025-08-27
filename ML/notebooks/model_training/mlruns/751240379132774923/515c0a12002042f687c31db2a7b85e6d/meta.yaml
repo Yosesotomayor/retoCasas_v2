@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/yosesotomayor/Library/CloudStorage/OneDrive-InstitutoTecnologicoydeEstudiosSuperioresdeMonterrey/TEC/Semestre%20Tec%20IA%20Avanzada/Modulo%20Reto%20Andrea/retoCasas/ML/notebooks/model_training/mlruns/751240379132774923/515c0a12002042f687c31db2a7b85e6d/artifacts
+end_time: 1756311884646
+entry_point_name: ''
+experiment_id: '751240379132774923'
+lifecycle_stage: active
+run_id: 515c0a12002042f687c31db2a7b85e6d
+run_name: ElasticNet+LGBM_Ensemble
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1756311884618
+status: 4
+tags: []
+user_id: yosesotomayor
