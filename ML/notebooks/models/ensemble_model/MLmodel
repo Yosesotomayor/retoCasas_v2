@@ -1,4 +1,4 @@
-artifact_path: file:///Users/yosesotomayor/Code/retoCasas/.ML/962172634513670594/models/m-dc8cc2afb5a44964972797f2e2038948/artifacts
+artifact_path: file:///Users/yosesotomayor/Code/retoCasas/.ML/116606298190487712/models/m-5ce4632893d74712b24adba22a8769b6/artifacts
 flavors:
   python_function:
     artifacts:
@@ -22,11 +22,11 @@ flavors:
     streamable: false
 is_signature_from_type_hint: false
 mlflow_version: 3.3.2
-model_id: m-dc8cc2afb5a44964972797f2e2038948
+model_id: m-5ce4632893d74712b24adba22a8769b6
 model_size_bytes: 18394375
-model_uuid: m-dc8cc2afb5a44964972797f2e2038948
+model_uuid: m-5ce4632893d74712b24adba22a8769b6
 prompts: null
-run_id: f26fae722cf54435998b53bb3c352e0e
+run_id: cd611dd7fb264bc4b06c086519063116
 saved_input_example_info:
   artifact_path: input_example.json
   pandas_orient: split
@@ -94,4 +94,4 @@ signature:
   outputs: '[{"type": "double", "name": "SalePrice", "required": true}]'
   params: null
 type_hint_from_example: false
-utc_time_created: '2025-08-27 19:54:46.278557'
+utc_time_created: '2025-08-27 23:08:46.728865'
