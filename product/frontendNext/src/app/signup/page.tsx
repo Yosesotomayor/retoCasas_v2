@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import logo from "@/assets/House_Price_Insights_transparent.png";
+import logo from "../../assets/House_Price_Insights_transparent.png";
 import Image from "next/image";
 
 // Coloca un archivo en /public/logo.png o ajusta la ruta/extension:

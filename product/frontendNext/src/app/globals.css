@@ -1,4 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* nada de @import "tailwindcss"; ni @theme inline */
 
 :root {
   --background: #ffffff;
