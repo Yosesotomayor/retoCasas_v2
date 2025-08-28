@@ -8,6 +8,9 @@ import pandas as pd
 import mlflow
 from mlflow.models.signature import infer_signature
 from mlflow.tracking import MlflowClient
+import os
+import tempfile
+from mlflow.exceptions import RestException
 
 
 # ---------- Básicos ----------
@@ -44,18 +47,52 @@ def _abs_or_none(p: Optional[str]) -> Optional[str]:
 
 
 def _signature_from_Xtest(X_test: Optional[pd.DataFrame], input_example: Optional[pd.DataFrame]):
+    """
+    Crea una firma solo a partir del esquema de entrada (input schema).
+    - Limpia columnas no-feature (Id/id/index)
+    - Evita pasar output_example a infer_signature (solo input)
+    - Devuelve un objeto Signature o None
+    """
     if X_test is None:
         return None
+
+
+
+def _sanitize_input_example(X_test: Optional[pd.DataFrame], input_example: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
+    ex = None
     try:
-        Xsig = X_test.copy()
-        # Remueve columnas identificadoras que no son features (p. ej. "Id")
+        ex = input_example if input_example is not None else (X_test.head() if X_test is not None else None)
+        if ex is None:
+            return None
+        ex = ex.copy()
         for _col in ("Id", "id", "index"):
-            if _col in Xsig.columns:
-                Xsig = Xsig.drop(columns=[_col])
-        example = input_example if input_example is not None else Xsig
-        return infer_signature(Xsig, example)
+            if _col in ex.columns:
+                ex = ex.drop(columns=[_col])
+        return ex if not ex.empty else None
     except Exception:
         return None
+
+
+def _make_run_fingerprint(model, X: Optional[pd.DataFrame], params: Optional[Dict], train_source: Optional[str], test_source: Optional[str]) -> str:
+    try:
+        model_name = getattr(model, "__class__", type(model)).__name__
+    except Exception:
+        model_name = str(type(model))
+    cols = None
+    try:
+        if X is not None:
+            cols = sorted([c for c in X.columns if c not in ("Id", "id", "index")])
+    except Exception:
+        cols = None
+    payload = {
+        "model": model_name,
+        "params": (params or {}),
+        "n_features": (len(cols) if cols is not None else None),
+        "features": cols,
+        "train_source": train_source,
+        "test_source": test_source,
+    }
+    return hashlib.md5(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()
 
 
 # ---------- Logging rápido ----------
@@ -80,6 +117,15 @@ def log_model_quick(
     client = MlflowClient()
     exp_id = ensure_experiment(experiment)
 
+    # Huella del run para evitar duplicados dentro del experimento
+    run_fingerprint = _make_run_fingerprint(
+        model,
+        X=(X_train if X_train is not None else X_test),
+        params=params,
+        train_source=train_source,
+        test_source=test_source,
+    )
+
     # Dedupe por hash de config
     config_hash = None
     if config_for_hash:
@@ -101,13 +147,32 @@ def log_model_quick(
                     "deduped": True,
                     "config_hash": config_hash,
                 }
+            if dedupe and run_fingerprint:
+                dup2 = client.search_runs(
+                    experiment_ids=[exp_id],
+                    filter_string=f"tags.run_fingerprint = '{run_fingerprint}'",
+                    max_results=1,
+                    order_by=["attributes.start_time DESC"],
+                )
+                if dup2:
+                    run = dup2[0]
+                    model_uri = f"runs:/{run.info.run_id}/{artifact_path}"
+                    return {
+                        "experiment_id": exp_id,
+                        "run_id": run.info.run_id,
+                        "model_uri": model_uri,
+                        "deduped": True,
+                        "config_hash": config_hash,
+                    }
 
     # Firma (si hay X_test)
     signature = _signature_from_Xtest(X_test, input_example)
+    example_clean = _sanitize_input_example(X_test, input_example)
 
     with mlflow.start_run(run_name=run_name) as run:
         if config_hash:
             mlflow.set_tag("config_hash", config_hash)
+        mlflow.set_tag("run_fingerprint", run_fingerprint)
 
         if params:
             mlflow.log_params({k: (v if v is not None else "None") for k, v in params.items()})
@@ -124,13 +189,34 @@ def log_model_quick(
             import mlflow.sklearn as msk
             msk.log_model(
                 model,
-                name=artifact_path,  # MLflow 3.x
+                artifact_path=artifact_path,
+                signature=signature,
+                input_example=example_clean,
             )
+        except RestException as e:
+            # Fallback compatible con servidores que no soportan ciertos endpoints
+            msg = str(e).lower()
+            if "unsupported endpoint" in msg or "not implemented" in msg:
+                import mlflow.sklearn as msk
+                with tempfile.TemporaryDirectory() as _tmp:
+                    local_dir = os.path.join(_tmp, "model_dir")
+                    msk.save_model(
+                        model,
+                        path=local_dir,
+                    )
+                    mlflow.log_artifacts(local_dir, artifact_path=artifact_path)
+            else:
+                raise
         except Exception:
-            mlflow.pyfunc.log_model(
-                python_model=model,
-                name=artifact_path,  # MLflow 3.x
-            )
+            # Fallback genérico a pyfunc.save_model + log_artifacts
+            import mlflow.pyfunc as mpy
+            with tempfile.TemporaryDirectory() as _tmp:
+                local_dir = os.path.join(_tmp, "model_dir")
+                mpy.save_model(
+                    path=local_dir,
+                    python_model=model,
+                )
+                mlflow.log_artifacts(local_dir, artifact_path=artifact_path)
 
         model_uri = f"runs:/{run.info.run_id}/{artifact_path}"
         return {
@@ -151,31 +237,38 @@ def register_if_needed(
     version_tags: Optional[Dict] = None,
 ):
     client = MlflowClient()
-    run_id = model_uri.split("/")[1]
+    try:
+        run_id = model_uri.split("/")[1]
 
-    # ¿ya hay versión para este run?
-    for v in client.search_model_versions(f"name='{model_name}'"):
-        if v.run_id == run_id:
-            return v.version
-
-    # ¿ya hay versión con mismo config_hash?
-    if config_hash:
+        # ¿ya hay versión para este run?
         for v in client.search_model_versions(f"name='{model_name}'"):
-            mv = client.get_model_version(model_name, v.version)
-            if mv.tags.get("config_hash") == config_hash:
+            if v.run_id == run_id:
                 return v.version
 
-    mv = mlflow.register_model(model_uri=model_uri, name=model_name, tags=(version_tags or {}))
-    if config_hash:
-        try:
-            client.set_model_version_tag(model_name, mv.version, "config_hash", config_hash)
-        except Exception:
-            pass
-    return mv.version
+        # ¿ya hay versión con mismo config_hash?
+        if config_hash:
+            for v in client.search_model_versions(f"name='{model_name}'"):
+                mv = client.get_model_version(model_name, v.version)
+                if mv.tags.get("config_hash") == config_hash:
+                    return v.version
+
+        mv = mlflow.register_model(model_uri=model_uri, name=model_name, tags=(version_tags or {}))
+        if config_hash:
+            try:
+                client.set_model_version_tag(model_name, mv.version, "config_hash", config_hash)
+            except Exception:
+                pass
+        return mv.version
+    except Exception:
+        # Si el backend no soporta registry, regresamos None sin romper el flujo
+        return None
 
 
 def set_alias(model_name: str, alias: str, version: str | int):
-    MlflowClient().set_registered_model_alias(model_name, alias, version=version)
+    try:
+        MlflowClient().set_registered_model_alias(model_name, alias, version=version)
+    except Exception:
+        pass
 
 
 def quick_log_and_register(
@@ -217,7 +310,7 @@ def quick_log_and_register(
         version_tags={"created_by": "Yose"},
     )
 
-    if set_challenger:
+    if set_challenger and ver is not None:
         set_alias(model_name, "challenger", ver)
     print("Modelo subido.")
     return result["model_uri"], ver
