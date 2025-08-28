@@ -9,11 +9,8 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import KFold
-
 from sklearn.metrics import r2_score, root_mean_squared_error
-
 from sklearn.model_selection import KFold
-
 from sklearn.pipeline import Pipeline
 from sklearn.base import clone
 from sklearn.linear_model import ElasticNet
@@ -31,6 +28,9 @@ class EnsembleModel:
             self.weights = None
             self.elasticnet = None
             self.lgbm = None
+            self.r2 = None
+            self.rmse = None
+            self.rmse_std = None
             self.rstate = rstate
             self.base_models = {
             "elasticnet": ElasticNet(alpha=0.0005, l1_ratio=0.9, random_state=rstate),
@@ -45,9 +45,6 @@ class EnsembleModel:
                   n_jobs=-1,
             ),
             }
-
-      def score(self, X, y):
-            return r2_score(y, self.predict(X))
       
       def fit(self, X, y):
             kf = KFold(n_splits=10, shuffle=True, random_state=self.rstate)
@@ -103,8 +100,12 @@ class EnsembleModel:
                   pipe = Pipeline([("pre", clone(pre_final)), ("model", clone(mdl))])
                   pipe.fit(X, y)
                   final_pipes[name] = pipe
+                  
             self.elasticnet = final_pipes["elasticnet"]
             self.lgbm = final_pipes["lgbm"]
+            self.r2 = cv_r2_mean
+            self.rmse = cv_rmse_mean
+            self.rmse_std = cv_rmse_std
             return self
 
       def predict(self, X):
@@ -116,4 +117,11 @@ class EnsembleModel:
             return {
                   "elasticnet": self.elasticnet.get_params(),
                   "lgbm": self.lgbm.get_params(),
+            }
+      
+      def get_metrics(self):
+            return {
+                  "r2": self.r2,
+                  "rmse": self.rmse,
+                  "rmse_std": self.rmse_std,
             }
