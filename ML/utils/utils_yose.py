@@ -10,15 +10,34 @@ from typing import Dict, List, Tuple
 
 from sklearn.preprocessing import OneHotEncoder, PowerTransformer
 from sklearn.impute import SimpleImputer
-
 from sklearn.compose import ColumnTransformer
-
 from sklearn.pipeline import Pipeline
+
+import os
+
+os.environ["MLFLOW_TRACKING_USERNAME"] = "Yosesotomayor"
+os.environ["MLFLOW_TRACKING_PASSWORD"] = "5ccfd9a73d7f528c267a1ec6737822b65df5a326"
+
+
 
 plt.style.use("seaborn-v0_8")
 sns.set_palette("husl")
 
-MODEL_NAME = "HousePrices_Ensemble"
+train_data = "../../../data/housing_data/train.csv"
+test_data = "../../../data/housing_data/test.csv"
+
+def load_data():
+    if os.path.exists(train_data):
+        df_train = pd.read_csv(train_data)
+    else:
+        print("No se encuentra el archivo de entrenamiento")
+        
+    if os.path.exists(test_data):
+        df_test = pd.read_csv(test_data)
+    else:
+        print("No se encuentra el archivo de prueba")
+        
+    return df_train, df_test
 
 def plot_hist_per_columns(df, cols, bins=20):
     if isinstance(cols, str):

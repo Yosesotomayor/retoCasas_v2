@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
@@ -30,3 +31,14 @@ __pycache__
 # Modelos
 *.pkl
 *.joblib
+
+
+# MLflow locales
+ML/models/**/model_*/
+ML/models/**/model_training/mlruns/
+**/mlruns/
+**/artifacts/
+
+# Docker
+DockerFile
+.dockerignore
