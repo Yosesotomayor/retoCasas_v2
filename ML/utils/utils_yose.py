@@ -22,7 +22,6 @@ train_data = "../../../../data/housing_data/train.csv"
 test_data = "../../../../data/housing_data/test.csv"
 
 def load_data():
-
     if os.path.exists(train_data):
         df_train = pd.read_csv(train_data)
     else:

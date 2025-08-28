@@ -1,4 +1,4 @@
-artifact_path: file:///Users/yosesotomayor/Code/retoCasas/.ML/116606298190487712/models/m-01efb8db1c3e499f9b39977693a6f411/artifacts
+artifact_path: file:///Users/yosesotomayor/Code/retoCasas/ML/647456890211602879/models/m-8125e8f950224d6ba6e621ecd7f44f19/artifacts
 flavors:
   python_function:
     env:
@@ -15,11 +15,11 @@ flavors:
     sklearn_version: 1.7.1
 is_signature_from_type_hint: false
 mlflow_version: 3.3.2
-model_id: m-01efb8db1c3e499f9b39977693a6f411
+model_id: m-8125e8f950224d6ba6e621ecd7f44f19
 model_size_bytes: 132261367
-model_uuid: m-01efb8db1c3e499f9b39977693a6f411
+model_uuid: m-8125e8f950224d6ba6e621ecd7f44f19
 prompts: null
-run_id: 1f5cdce58bd44b1289c1d6a4423e2ea1
+run_id: 4f96be21571040a48ca169734a183204
 signature:
   inputs: '[{"type": "long", "name": "Id", "required": true}, {"type": "long", "name":
     "MSSubClass", "required": true}, {"type": "string", "name": "MSZoning", "required":
@@ -82,4 +82,4 @@ signature:
   outputs: '[{"type": "double", "name": "SalePrice", "required": true}]'
   params: null
 type_hint_from_example: false
-utc_time_created: '2025-08-28 00:29:59.306753'
+utc_time_created: '2025-08-28 01:25:04.157530'
