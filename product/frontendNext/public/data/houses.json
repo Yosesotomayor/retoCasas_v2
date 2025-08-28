@@ -1,0 +1,22 @@
+{
+    "houses": [
+        {
+            "id": 1,
+            "title": "Casa en el centro",
+            "price": 250000,
+            "image": "/images/houses/house1.png"
+        },
+        {
+            "id": 2,
+            "title": "Departamento en la playa",
+            "price": 300000,
+            "image": "/images/houses/house2.png"
+        },
+        {
+            "id": 3,
+            "title": "Casa de campo",
+            "price": 200000,
+            "image": "/images/houses/house3.png"
+        }
+    ]
+}

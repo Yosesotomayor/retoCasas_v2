@@ -1,6 +1,9 @@
+"use client";
+import { useRouter } from "next/navigation";
 
 
 export default function Topbar() {
+    const router = useRouter();
     return (
       <div className="h-14 bg-[#2b2b2b] text-white flex items-center gap-3 px-5 shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
         {/* lista de significado de estilos
@@ -21,6 +24,9 @@ export default function Topbar() {
               "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 fill=%22black%22 viewBox=%220 0 24 24%22><path d=%22M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z%22/></svg>') center / 20px no-repeat",
             mask: //esto es para aplicar un icono SVG como máscara
               "url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 fill=%22black%22 viewBox=%220 0 24 24%22><path d=%22M12 3 2 12h3v8h6v-5h2v5h6v-8h3L12 3z%22/></svg>') center / 20px no-repeat",
+          }}
+          onClick={() => {
+            router.push("/");
           }}
         />
         
