@@ -10,15 +10,31 @@ from typing import Dict, List, Tuple
 
 from sklearn.preprocessing import OneHotEncoder, PowerTransformer
 from sklearn.impute import SimpleImputer
-
 from sklearn.compose import ColumnTransformer
-
 from sklearn.pipeline import Pipeline
+
+import os
 
 plt.style.use("seaborn-v0_8")
 sns.set_palette("husl")
 
-MODEL_NAME = "HousePrices_Ensemble"
+train_data = "../../../../data/housing_data/train.csv"
+test_data = "../../../../data/housing_data/test.csv"
+
+def load_data():
+
+    if os.path.exists(train_data):
+        df_train = pd.read_csv(train_data)
+    else:
+        print("No se encuentra el archivo de entrenamiento")
+        
+    if os.path.exists(test_data):
+        df_test = pd.read_csv(test_data)
+        X_test = df_test.drop(["Id"], axis=1)
+    else:
+        print("No se encuentra el archivo de prueba")
+        
+    return df_train, X_test, df_test
 
 def plot_hist_per_columns(df, cols, bins=20):
     if isinstance(cols, str):

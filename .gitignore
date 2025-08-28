@@ -26,3 +26,7 @@ dist-ssr
 # General
 catboost_info
 __pycache__
+
+# Modelos
+*.pkl
+*.joblib
