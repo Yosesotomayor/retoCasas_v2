@@ -2,19 +2,21 @@
 
 import { useState } from "react";
 import logo from "@/assets/House_Price_Insights_transparent.png";
+import Image from "next/image";
 
 // Coloca un archivo en /public/logo.png o ajusta la ruta/extension:
 
-type MsgType = "ok" | "err" | null;
+type MsgType = "ok" | "err" | null; // Marcar un mensaje como correcto o error
 
 export default function SignUp() {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [pass2, setPass2] = useState("");
-  const [msg, setMsg] = useState<{ type: MsgType; text: string }>({
-    type: null,
-    text: "",
-  });
+  const [user, setUser] = useState(""); // Nombre de usuario
+  const [pass, setPass] = useState(""); // Contraseña
+  const [pass2, setPass2] = useState(""); // Repetir contraseña
+  const [msg, setMsg] = useState<{ 
+    type: MsgType;
+     text: string }>
+     ({ type: null,
+    text: ""  });
 
   const onSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -49,7 +51,7 @@ export default function SignUp() {
       <section className="w-[min(420px,92vw)] bg-white rounded-[14px] shadow-[0_10px_26px_rgba(0,0,0,0.10)] p-7 text-center animate-[pop_.3s_ease-out]">
         {/* Brand */}
         <div className="flex items-center justify-center gap-3 mb-2">
-          <Image src={logo} alt="House Price Insights" />
+          <Image src={logo} alt="House Price Insights" width={48} height={48} />
         </div>
         <p className="mt-0 mb-4 text-[13px] text-[#9FA4AD]">
           Descubre el valor real de tu vivienda
