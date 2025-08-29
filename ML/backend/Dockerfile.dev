@@ -1,0 +1,31 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    FLASK_ENV=development \
+    FLASK_DEBUG=1 \
+    PYTHONPATH=/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
+# Contexto = ML/, por eso esto existe aquí
+WORKDIR /app
+COPY requirements.txt ./requirements.txt
+
+# Dependencias (se instalan una vez; el código se montará por volumen)
+RUN pip install --upgrade pip setuptools wheel \
+ && pip install --prefer-binary -r requirements.txt
+
+# Puesto que el código se montará con volúmenes, no hacemos COPY .
+# Establecemos el directorio de trabajo del backend
+WORKDIR /app/ML/backend
+
+EXPOSE 8000
+
+# Flask en modo desarrollo con recarga
+# Asegúrate que ML/backend/app.py define: app = Flask(__name__)
+ENV FLASK_APP=app.py
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8000", "--debug"]

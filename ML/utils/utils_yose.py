@@ -14,17 +14,11 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 import os
-
-os.environ["MLFLOW_TRACKING_USERNAME"] = "Yosesotomayor"
-os.environ["MLFLOW_TRACKING_PASSWORD"] = "5ccfd9a73d7f528c267a1ec6737822b65df5a326"
-
-
-
 plt.style.use("seaborn-v0_8")
 sns.set_palette("husl")
 
-train_data = "../../../data/housing_data/train.csv"
-test_data = "../../../data/housing_data/test.csv"
+train_data = "../../data/housing_data/train.csv"
+test_data = "../../data/housing_data/test.csv"
 
 def load_data():
     if os.path.exists(train_data):

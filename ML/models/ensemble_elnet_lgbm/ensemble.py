@@ -1,14 +1,11 @@
 import sys
 
 sys.path.append("../../../")
-from ML.utils.mlflow_flow import set_tracking, quick_log_and_register
-from ML.utils.utils_yose import load_data, make_features, build_preprocessor
+from ML.utils.mlflow_flow import set_tracking
+from ML.utils.utils_yose import build_preprocessor
 
-import os
-import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import KFold
 from sklearn.metrics import r2_score, root_mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
