@@ -18,7 +18,7 @@ export default function Home() {
             src={logo}
             alt="House Price Insights"
             priority  
-            className="w-[220px] md:w-[280px] h-auto"
+            className="w-[340px] md:w-[420px] h-auto"
           />
         </div>
 
