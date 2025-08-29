@@ -4,6 +4,7 @@ import json
 import traceback
 from typing import Any, Dict
 
+os.listdir("../../")
 sys.path.append("../../")
 
 from dotenv import load_dotenv
@@ -12,10 +13,11 @@ import mlflow
 from ML.utils.mlflow_flow import set_tracking
 
 load_dotenv()
-ENDPOINT_URL = os.getenv("ENDPOINT_URL") 
-MLFLOW_TOKEN = os.getenv("MLFLOW_TRACKING_TOKEN") or os.getenv("DAGSHUB_TOKEN")
+ENDPOINT_URL = os.getenv("ENDPOINT_URL")
+print(ENDPOINT_URL)
 MLFLOW_USER = os.getenv("MLFLOW_TRACKING_USERNAME")
 MLFLOW_PASS = os.getenv("MLFLOW_TRACKING_PASSWORD")
+
 MODEL_NAME = os.getenv("MODEL_NAME", "elnet_lgbm")
 MODEL_ALIAS = os.getenv("MODEL_ALIAS", "champion")
 HOST_NAME = os.getenv("HOST", "0.0.0.0")
@@ -23,33 +25,18 @@ PORT = int(os.getenv("PORT", "5000"))
 
 app = Flask(__name__)
 
-# Configure tracking + auth BEFORE any MLflow call
 if ENDPOINT_URL:
-    # Some utilities in your repo call set_tracking; keep it for consistency
     try:
         set_tracking(ENDPOINT_URL)
     except Exception:
-        # set_tracking may not exist / not set envs; fall back to direct env vars
         pass
 
-    os.environ["MLFLOW_TRACKING_URI"] = ENDPOINT_URL
-    # Prefer token auth if present (DagsHub/MLflow 2.22 compatible)
-    if MLFLOW_TOKEN:
-        os.environ["MLFLOW_TRACKING_TOKEN"] = MLFLOW_TOKEN
-        # Clear basic creds to avoid conflicts
-        os.environ.pop("MLFLOW_TRACKING_USERNAME", None)
-        os.environ.pop("MLFLOW_TRACKING_PASSWORD", None)
-    elif MLFLOW_USER and MLFLOW_PASS:
-        os.environ["MLFLOW_TRACKING_USERNAME"] = MLFLOW_USER
-        os.environ["MLFLOW_TRACKING_PASSWORD"] = MLFLOW_PASS
 
-# Lazily loaded model holder
 _model = None
 _model_info: Dict[str, Any] = {}
 
 
 def _load_model() -> None:
-    """Load the model by alias once and cache it."""
     global _model, _model_info
     if _model is not None:
         return
@@ -58,7 +45,6 @@ def _load_model() -> None:
         _model = mlflow.pyfunc.load_model(uri)
         _model_info = {"model": MODEL_NAME, "alias": MODEL_ALIAS, "uri": uri}
     except Exception as e:
-        # Surface common auth / 401 issues clearly
         msg = str(e)
         hint = (
             "MLflow 401 Unauthorized. Make sure ENDPOINT_URL points to your tracking server "
@@ -120,7 +106,7 @@ def predict_kaggle():
         _load_model()
         return jsonify({"message": "Model ready", **_model_info})
     except Exception as e:
-        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
+        return jsonify({"error": str(e), "trace": traceback.format_exc(), "ENDPOINT": ENDPOINT_URL}), 500
 
 
 if __name__ == '__main__':
