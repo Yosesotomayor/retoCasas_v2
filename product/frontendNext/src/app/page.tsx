@@ -1,36 +1,59 @@
 "use client";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import logo from "@/assets/House_Price_Insights_transparent.png"
 import Link from "next/link";
+import logo from "@/assets/House_Price_Insights_transparent.png";
 
 export default function Home() {
-  const router = useRouter();
   return (
-    <div
-      style={{ marginTop: "var(--topbar-height)" }}
-     className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <div>
-        <div className="flex items-center justify-center gap-3 mb-2 ">
+    <div className="min-h-screen font-[Inter] text-[#1A1A1A]
+      bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
+
+
+
+      {/* HERO simple y limpio */}
+      <main className="max-w-[1200px] mx-auto px-5 py-10 lg:py-16">
+        {/* Logo */}
+        <div className="mb-10">
           <Image
-          src={logo}
-          alt="House Price Insights"
-          className="max-w-[30vw] max-h-[30vh] h-auto w-auto object-contain"
-        />
+            src={logo}
+            alt="House Price Insights"
+            priority  
+            className="w-[220px] md:w-[280px] h-auto"
+          />
         </div>
 
-        <div>
-          <h1 className="text-4xl font-bold">Analiza, predice y entiende hoy el precio de tu vivienda.</h1>
-        </div>
-        <h1 >Welcome to HousePricing App</h1>
+        {/* Título + CTA en “card” para que matchee con Register */}
+        <section className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <h1 className="font-extrabold uppercase tracking-[1.2px] leading-[1.05]
+              text-[34px] md:text-[44px] max-w-[22ch]">
+            Analiza, predice y entiende hoy el precio de tu vivienda.
+          </h1>
 
-        <p className="mt-2 text-lg">Find your dream home today!</p>
-        <Link className="mt-4 px-4 py-2 bg-blue-500 text-white rounded" href="/houses">Houses</Link>
+          <div className="w-full md:w-auto">
+            <div className="rounded-[14px] border border-black/10 bg-white shadow-[0_10px_26px_rgba(0,0,0,0.10)]
+                p-4 md:p-5 flex items-center gap-3">
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center rounded-[10px] font-extrabold uppercase tracking-[0.7px]
+                  px-5 py-3 bg-[#FFD43B] text-[#1A1A1A] hover:bg-[#E6BD2F] transition"
+              >
+                Regístrate
+              </Link>
+              <Link
+                href="/houses"
+                className="inline-flex items-center justify-center rounded-[10px] font-extrabold uppercase tracking-[0.7px]
+                  px-5 py-3 border-2 border-black/15 text-[#1A1A1A] hover:border-black/35 transition"
+              >
+                Explorar casas
+              </Link>
+            </div>
+          </div>
+        </section>
 
-
-        <Link className="mt-4 px-4 py-2 bg-green-500 text-white rounded" href="/signup">Register</Link>
-
-      </div>
+        <p className="mt-6 text-sm text-[#9FA4AD]">
+          Estimaciones rápidas con modelos de machine learning y variables clave.
+        </p>
+      </main>
     </div>
   );
 }
