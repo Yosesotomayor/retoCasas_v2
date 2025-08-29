@@ -13,21 +13,14 @@ import mlflow
 from ML.utils.mlflow_flow import set_tracking
 
 load_dotenv()
-ENDPOINT_URL = os.getenv("ENDPOINT_URL")
-print(ENDPOINT_URL)
-MLFLOW_USER = os.getenv("MLFLOW_TRACKING_USERNAME")
-MLFLOW_PASS = os.getenv("MLFLOW_TRACKING_PASSWORD")
-
-MODEL_NAME = os.getenv("MODEL_NAME", "elnet_lgbm")
-MODEL_ALIAS = os.getenv("MODEL_ALIAS", "champion")
-HOST_NAME = os.getenv("HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", "5000"))
+MODEL_NAME = 'elnet_lgbm'
 
 app = Flask(__name__)
 
 if ENDPOINT_URL:
     try:
-        set_tracking(ENDPOINT_URL)
+        mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+        mlflow.set_registry_uri(os.environ["MLFLOW_REGISTRY_URI"])
     except Exception:
         pass
 

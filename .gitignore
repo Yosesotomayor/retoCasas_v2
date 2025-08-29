@@ -41,7 +41,6 @@ ML/models/**/model_training/mlruns/
 **/artifacts/
 
 # Docker
-DockerFile
 .dockerignore
 
 # Yo
