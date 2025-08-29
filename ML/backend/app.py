@@ -14,16 +14,15 @@ from ML.utils.mlflow_flow import set_tracking
 
 load_dotenv()
 MODEL_NAME = 'elnet_lgbm'
+MODEL_ALIAS = 'champion'
 
 app = Flask(__name__)
 
-if ENDPOINT_URL:
-    try:
-        mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-        mlflow.set_registry_uri(os.environ["MLFLOW_REGISTRY_URI"])
-    except Exception:
-        pass
-
+try:
+    mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+    mlflow.set_registry_uri(os.environ["MLFLOW_REGISTRY_URI"])
+except Exception as e:
+    print(e)
 
 _model = None
 _model_info: Dict[str, Any] = {}
@@ -99,7 +98,7 @@ def predict_kaggle():
         _load_model()
         return jsonify({"message": "Model ready", **_model_info})
     except Exception as e:
-        return jsonify({"error": str(e), "trace": traceback.format_exc(), "ENDPOINT": ENDPOINT_URL}), 500
+        return jsonify({"error": str(e), "trace": traceback.format_exc()}), 500
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 # ===== Configuración =====
 COMPOSE_BASE = docker-compose.yml
 COMPOSE_DEV = docker-compose.override.yml
+DOCKER_CLI_PLUGIN_PATH=/usr/libexec/docker/cli-plugins make up-dev
 
 # Servicio principal
 SERVICE = ml-backend
