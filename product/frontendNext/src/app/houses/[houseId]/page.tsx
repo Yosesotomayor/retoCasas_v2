@@ -32,8 +32,13 @@ export default async function HouseDetails({params}:{
 
     return(
         <div>
-            <h1>House {houseId} Details</h1>
-            <img src={house?.image}  alt={`House ${houseId}`} />
+            <h1 className="ml-5">House {houseId} Details</h1>
+            <img 
+                src={house?.image} 
+                alt={`House ${houseId}`} 
+                className="h-auto max-w-[30vw] object-contain ml-5" 
+            />
+            
         </div>
     )
 }

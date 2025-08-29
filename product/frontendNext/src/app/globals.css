@@ -7,6 +7,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --topbar-height: 56px;
+
 }
 
 @theme inline {
