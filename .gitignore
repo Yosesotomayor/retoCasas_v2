@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env
+.env.save
 
 # Editor directories and files
 .vscode/*
@@ -42,3 +43,7 @@ ML/models/**/model_training/mlruns/
 # Docker
 DockerFile
 .dockerignore
+
+# Yo
+reto_housing
+
