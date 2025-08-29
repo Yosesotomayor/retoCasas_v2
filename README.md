@@ -83,3 +83,4 @@ Yose Sotomayor
 Data Science & Mathematics Engineering — Tec de Monterrey
 LinkedIn
  • GitHub
+poner sus nombres cawns
