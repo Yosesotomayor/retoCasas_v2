@@ -11,7 +11,7 @@ type HouseElementProps = {
 
 export default function HouseElement ({params}: HouseElementProps) {
     return (
-        <div>
+        <div className="p-4 border border-gray-200 grayblack rounded-lg shadow hover:shadow-lg transition">
             <h2>{params.title}</h2>
             <p>{params.description}</p>
             {params.imageUrl && (
