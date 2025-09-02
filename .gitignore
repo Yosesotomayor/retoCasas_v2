@@ -40,9 +40,7 @@ ML/models/**/model_training/mlruns/
 **/mlruns/
 **/artifacts/
 
-# Docker
 .dockerignore
-
-# Yo
 reto_housing
-
+.DS_Store
+package-lock.json
