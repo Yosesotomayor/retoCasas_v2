@@ -46,8 +46,7 @@ export default function SignUp() {
   return (
     <main
       className="min-h-[calc(100vh-56px)] grid place-items-center px-4 
-      bg-[radial-gradient(1200px_600px_at_70%_-100px,rgba(255,212,59,0.20),transparent_60%)]"
-    >
+      bg-[radial-gradient(1200px_600px_at_70%_-100px,rgba(255,212,59,0.20),transparent_60%)]">
       <section className="w-[min(420px,92vw)] bg-white rounded-[14px] shadow-[0_10px_26px_rgba(0,0,0,0.10)] p-7 text-center animate-[pop_.3s_ease-out]">
         {/* Brand */}
         <div className="flex items-center justify-center gap-3 mb-2">
@@ -150,8 +149,8 @@ export default function SignUp() {
         {/* Legal */}
         <div className="mt-3 text-[12px] text-[#9FA4AD] text-center">
           Al registrarte aceptas nuestros{" "}
-          <a href="/terminos" className="underline">Términos</a> y{" "}
-          <a href="/privacidad" className="underline">Privacidad</a>.
+          <a href="/terms" className="underline">Términos</a> y{" "}
+          <a href="/privacy" className="underline">Privacidad</a>.
         </div>
       </section>
     </main>
