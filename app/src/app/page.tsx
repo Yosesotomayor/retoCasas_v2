@@ -62,7 +62,7 @@ export default function Home() {
           </Link>
         </div>
         <Link
-          href="/estimate"
+          href="/prediction"
           className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-[10px]
             font-semibold px-5 py-3 text-[#1A1A1A] border border-black/20
             hover:border-black/40 bg-white/60 backdrop-blur-[2px] transition"
