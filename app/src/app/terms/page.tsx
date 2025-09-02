@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 
-export default function TermsPage() {
+export default function Terms() {
   return (
     <div className="min-h-screen font-[Inter] text-[#1A1A1A]
       bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">

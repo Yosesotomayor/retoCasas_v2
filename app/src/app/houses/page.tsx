@@ -1,25 +1,37 @@
-import HouseElement from "@/components/houseElement";
+import HouseElement from "@/components/HouseElement";
 import Link from "next/link";
 
-export default async function HousesList() {
-    const res = await fetch(`http://localhost:3000/data/houses.json`);
-    const data = await res.json();
-    const houses = Array.isArray(data) ? data : data.houses || [];
+interface House {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+}
 
-    return(
-        <div>
-            <h1>Houses List</h1>
+export default async function Houses() {
+  const res = await fetch(`http://localhost:3000/data/houses.json`);
+  const data = await res.json();
+  const houses: House[] = Array.isArray(data) ? data : data.houses || [];
 
-            {houses.map((house: { id: number; title: string; description: string; image: string }) => (
-                <Link key={house.id} href={`/houses/${house.id}`} className="block mb-4">
-                  <HouseElement key={house.id} params={{
-                    title: house.title,
-                    description: house.description,
-                    imageUrl: house.image
-                }} />
-                </Link>
-            ))}
-
-        </div>
-    )
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Lista de Casas</h1>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {houses.map((house) => (
+          <Link 
+            key={house.id} 
+            href={`/houses/${house.id}`} 
+            className="block transition-transform hover:scale-105"
+          >
+            <HouseElement
+              title={house.title}
+              description={house.description}
+              imageUrl={house.image}
+            />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 }
