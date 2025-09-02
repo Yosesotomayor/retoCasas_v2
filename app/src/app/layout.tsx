@@ -1,5 +1,5 @@
 import "./globals.css";
-import Topbar from "@/components/Topbar";
+import Topbar from "@/components/TopBar";
 
 interface RootLayoutProps {
   children: React.ReactNode;
