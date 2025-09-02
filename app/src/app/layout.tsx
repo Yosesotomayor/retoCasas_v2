@@ -7,8 +7,8 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="es">
-      <body>
+    <html lang="es" className="bg-gray-800">
+      <body className="min-h-screen grid grid-rows-[auto_1fr]">
         <Topbar />
         {children}
       </body>
