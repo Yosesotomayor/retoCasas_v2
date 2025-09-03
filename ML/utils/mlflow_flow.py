@@ -114,7 +114,8 @@ def log_model_quick(
     experiment: str,
     run_name: str,
     model,                         # objeto sklearn/pyfunc
-    artifact_path: str = "model",  # en MLflow 3.x esto va en 'name='
+    artifact_path: str = "model",
+    artifacts: Optional[Dict] = None,
     X_train: Optional[pd.DataFrame] = None,
     y_train: Optional[pd.Series] = None,
     X_test: Optional[pd.DataFrame] = None,
@@ -186,7 +187,6 @@ def log_model_quick(
         if config_hash:
             mlflow.set_tag("config_hash", config_hash)
         mlflow.set_tag("run_fingerprint", run_fingerprint)
-
         if params:
             mlflow.log_params({k: (v if v is not None else "None") for k, v in params.items()})
 
@@ -196,8 +196,22 @@ def log_model_quick(
 
         if tags:
             mlflow.set_tags(tags)
-
-        # Log del modelo (sklearn preferente; fallback a pyfunc)
+        if artifacts:
+            import mlflow.pyfunc as mpy
+            mpy.log_model(
+                artifact_path=artifact_path,
+                python_model=model,              # tu clase debe heredar de PythonModel
+                artifacts=artifacts,             # {"elasticnet.pkl": "...", "lgbm.pkl": "..."}
+                signature=signature,
+                input_example=example_clean,
+                pip_requirements=[
+                    "mlflow==2.22.0",
+                    "scikit-learn==1.5.2",
+                    "lightgbm==4.5.0",
+                    "joblib==1.4.2",
+                ],
+                code_path=["ML/utils", "ML/models/ensemble_elnet_lgbm/model"], 
+            )
         try:
             import mlflow.sklearn as msk
             msk.log_model(
@@ -251,29 +265,21 @@ def register_if_needed(
 ):
     client = MlflowClient()
     try:
-        # 0) Asegura el Registered Model
         _ensure_registered_model_exists(client, model_name)
 
         run_id = model_uri.split("/")[1]
-
-        # 1) ¿ya hay versión para este run?
         for v in client.search_model_versions(f"name='{model_name}'"):
             if v.run_id == run_id:
                 return v.version
 
-        # 2) ¿ya hay versión con mismo config_hash?
         if config_hash:
             for v in client.search_model_versions(f"name='{model_name}'"):
                 mv = client.get_model_version(model_name, v.version)
                 if getattr(mv, "tags", {}).get("config_hash") == config_hash:
                     return v.version
-
-        # 3) Registrar nueva versión
         mv = mlflow.register_model(model_uri=model_uri, name=model_name)
-        # 4) Esperar a READY para poder setear tags/alias sin carreras
         mv = _wait_until_ready(client, model_name, mv.version, timeout=180, poll=2.0)
 
-        # 5) Setear tags de versión (incluye config_hash si aplica)
         if version_tags:
             for k, v in version_tags.items():
                 client.set_model_version_tag(model_name, mv.version, k, str(v))
@@ -282,7 +288,6 @@ def register_if_needed(
 
         return mv.version
     except Exception:
-        # Si el backend no soporta registry, regresamos None sin romper el flujo
         return None
 
 
@@ -302,14 +307,11 @@ def quick_log_and_register(
     params: dict,
     metrics: dict,
     model_name: str,
+    artifacts: dict | None = None,
     tags: dict | None = None,
     dedupe: bool = True,
     set_challenger: bool = True,
 ):
-    """
-    Atajo: loguea modelo, evita duplicados y registra con alias challenger.
-    Retorna (model_uri, version).
-    """
     print("Subiendo modelo...")
     result = log_model_quick(
         experiment=experiment,
@@ -321,6 +323,7 @@ def quick_log_and_register(
         params=params,
         metrics=metrics,
         tags=tags,
+        artifacts=artifacts,
         config_for_hash={**params, "n_folds": 10, "n_features": X.shape[1]},
         dedupe=dedupe,
     )

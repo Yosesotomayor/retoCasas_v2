@@ -104,6 +104,7 @@ class EnsembleModel:
         self.r2 = cv_r2_mean
         self.rmse = cv_rmse_mean
         self.rmse_std = cv_rmse_std
+        
         return self
 
     def predict(self, X):
