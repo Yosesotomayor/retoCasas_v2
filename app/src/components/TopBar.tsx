@@ -29,9 +29,11 @@ export default function Topbar() {
       
       {session && (
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-300">
-            Hola, {session.user?.name}
-          </span>
+          <Link href="/home">
+            <span className="text-sm text-gray-300 hover:text-white transition-colors cursor-pointer">
+              Hola, {session.user?.name}
+            </span>
+          </Link>
           <button
             onClick={handleSignOut}
             className="flex items-center gap-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 

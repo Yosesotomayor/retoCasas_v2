@@ -9,10 +9,12 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="es" className="bg-gray-800">
-      <body className="min-h-screen grid grid-rows-[auto_1fr]">
+      <body>
         <Providers>
-          <Topbar />
-          {children}
+          <div className="min-h-screen grid grid-rows-[auto_1fr]">
+            <Topbar />
+            {children}
+          </div>
         </Providers>
       </body>
     </html>

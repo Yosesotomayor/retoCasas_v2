@@ -22,7 +22,7 @@ export default async function Houses() {
           <Link 
             key={house.id} 
             href={`/houses/${house.id}`} 
-            className="block transition-transform hover:scale-105"
+            className="block"
           >
             <HouseElement
               title={house.title}
