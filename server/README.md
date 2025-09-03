@@ -6,7 +6,7 @@
 # server/.env
 
 HOST=0.0.0.0
-PORT=3000
+PORT=8000
 ENVIRONMENT=development
 DEBUG=true
 ```
