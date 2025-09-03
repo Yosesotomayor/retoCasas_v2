@@ -3,10 +3,9 @@ import json
 import hashlib
 from typing import Dict, Optional
 from pathlib import Path
-
+import time
 import pandas as pd
 import mlflow
-from mlflow.models.signature import infer_signature
 from mlflow.tracking import MlflowClient
 import os
 import tempfile
@@ -16,7 +15,27 @@ from mlflow.exceptions import RestException
 # ---------- Básicos ----------
 def set_tracking(uri: str = "http://127.0.0.1:5000"):
     mlflow.set_tracking_uri(uri)
+    try:
+        mlflow.set_registry_uri(uri)
+    except Exception:
+        pass
 
+def _wait_until_ready(client: MlflowClient, model_name: str, version: str | int, timeout: int = 180, poll: float = 2.0):
+    start = time.time()
+    while True:
+        mv = client.get_model_version(model_name, str(version))
+        status = getattr(mv, "status", "READY")
+        if status == "READY":
+            return mv
+        if time.time() - start > timeout:
+            raise TimeoutError(f"Model version {model_name}/{version} not READY after {timeout}s (status={status}).")
+        time.sleep(poll)
+
+def _ensure_registered_model_exists(client: MlflowClient, model_name: str):
+    try:
+        client.get_registered_model(model_name)
+    except Exception:
+        client.create_registered_model(model_name)
 
 def ensure_experiment(name: str) -> str:
     """
@@ -47,12 +66,6 @@ def _abs_or_none(p: Optional[str]) -> Optional[str]:
 
 
 def _signature_from_Xtest(X_test: Optional[pd.DataFrame], input_example: Optional[pd.DataFrame]):
-    """
-    Crea una firma solo a partir del esquema de entrada (input schema).
-    - Limpia columnas no-feature (Id/id/index)
-    - Evita pasar output_example a infer_signature (solo input)
-    - Devuelve un objeto Signature o None
-    """
     if X_test is None:
         return None
 
@@ -238,26 +251,35 @@ def register_if_needed(
 ):
     client = MlflowClient()
     try:
+        # 0) Asegura el Registered Model
+        _ensure_registered_model_exists(client, model_name)
+
         run_id = model_uri.split("/")[1]
 
-        # ¿ya hay versión para este run?
+        # 1) ¿ya hay versión para este run?
         for v in client.search_model_versions(f"name='{model_name}'"):
             if v.run_id == run_id:
                 return v.version
 
-        # ¿ya hay versión con mismo config_hash?
+        # 2) ¿ya hay versión con mismo config_hash?
         if config_hash:
             for v in client.search_model_versions(f"name='{model_name}'"):
                 mv = client.get_model_version(model_name, v.version)
-                if mv.tags.get("config_hash") == config_hash:
+                if getattr(mv, "tags", {}).get("config_hash") == config_hash:
                     return v.version
 
-        mv = mlflow.register_model(model_uri=model_uri, name=model_name, tags=(version_tags or {}))
+        # 3) Registrar nueva versión
+        mv = mlflow.register_model(model_uri=model_uri, name=model_name)
+        # 4) Esperar a READY para poder setear tags/alias sin carreras
+        mv = _wait_until_ready(client, model_name, mv.version, timeout=180, poll=2.0)
+
+        # 5) Setear tags de versión (incluye config_hash si aplica)
+        if version_tags:
+            for k, v in version_tags.items():
+                client.set_model_version_tag(model_name, mv.version, k, str(v))
         if config_hash:
-            try:
-                client.set_model_version_tag(model_name, mv.version, "config_hash", config_hash)
-            except Exception:
-                pass
+            client.set_model_version_tag(model_name, mv.version, "config_hash", config_hash)
+
         return mv.version
     except Exception:
         # Si el backend no soporta registry, regresamos None sin romper el flujo

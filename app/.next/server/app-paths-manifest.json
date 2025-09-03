@@ -1,0 +1,12 @@
+{
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(auth)/signup/page": "app/(auth)/signup/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/auth/register/route": "app/api/auth/register/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/home/page": "app/home/page.js",
+  "/houses/[houseId]/page": "app/houses/[houseId]/page.js",
+  "/houses/page": "app/houses/page.js",
+  "/page": "app/page.js",
+  "/prediction/page": "app/prediction/page.js"
+}

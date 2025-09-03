@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 3, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 15, "column": 0}, "map": {"version":3,"sources":["file:///Users/albertovelazquez/Documents/Github/retoCasas_v2/app/src/app/prediction/page.tsx"],"sourcesContent":["export default function Prediction() {\n  return (\n    <div className=\"container mx-auto px-4 py-8\">\n      <h1 className=\"text-3xl font-bold mb-6\">Predicción del Precio de Vivienda</h1>\n      \n      <div className=\"bg-white rounded-lg shadow-md p-6\">\n        <p className=\"text-gray-600 mb-4\">\n          Aquí podrás introducir los datos de una propiedad para obtener una \n          predicción de su precio usando nuestro modelo de machine learning.\n        </p>\n        \n        <div className=\"bg-yellow-50 border border-yellow-200 rounded-md p-4\">\n          <p className=\"text-yellow-800\">\n            🚧 Función en desarrollo - Próximamente disponible\n          </p>\n        </div>\n      </div>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAI,WAAU;;0BACb,8OAAC;gBAAG,WAAU;0BAA0B;;;;;;0BAExC,8OAAC;gBAAI,WAAU;;kCACb,8OAAC;wBAAE,WAAU;kCAAqB;;;;;;kCAKlC,8OAAC;wBAAI,WAAU;kCACb,cAAA,8OAAC;4BAAE,WAAU;sCAAkB;;;;;;;;;;;;;;;;;;;;;;;AAOzC","debugId":null}}]
+}

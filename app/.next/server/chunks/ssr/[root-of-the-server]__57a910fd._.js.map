@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 3, "column": 0}, "map": {"version":3,"sources":[],"names":[],"mappings":"","debugId":null}},
+    {"offset": {"line": 15, "column": 0}, "map": {"version":3,"sources":["file:///Users/albertovelazquez/Documents/Github/retoCasas_v2/app/src/app/predictHouse/page.tsx"],"sourcesContent":["\nexport default function PredictHouse() {\n  return (\n    <div>\n      <h1>Predicción del precio de la vivienda</h1>\n      {/* Aquí va el contenido de la página de predicción */}\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;;AACe,SAAS;IACtB,qBACE,8OAAC;kBACC,cAAA,8OAAC;sBAAG;;;;;;;;;;;AAIV","debugId":null}}]
+}
