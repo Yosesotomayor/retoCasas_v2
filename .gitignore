@@ -58,3 +58,4 @@ terraform.tfstate
 # SSH Keys
 *.pem
 *.pub
+terraform.tfstate.backup
