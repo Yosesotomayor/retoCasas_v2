@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/local"
       version = "~> 2.4"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
+    }
   }
 }
 
@@ -22,6 +26,10 @@ provider "oci" {
   private_key_path    = var.private_key_path
   tenancy_ocid        = var.tenancy_ocid
   region              = var.region
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }
 
 resource "oci_core_vcn" "vcn" {

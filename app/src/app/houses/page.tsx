@@ -9,9 +9,20 @@ interface House {
 }
 
 export default async function Houses() {
-  const res = await fetch(`http://localhost:3000/data/houses.json`);
-  const data = await res.json();
-  const houses: House[] = Array.isArray(data) ? data : data.houses || [];
+  let houses: House[] = [];
+  
+  try {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/houses`, {
+      cache: 'no-store'
+    });
+    
+    if (res.ok) {
+      houses = await res.json();
+    }
+  } catch (error) {
+    console.error('Error fetching houses:', error);
+  }
 
   return (
     <div className="mx-auto px-4 py-8 flex flex-col overflow-auto h-full">

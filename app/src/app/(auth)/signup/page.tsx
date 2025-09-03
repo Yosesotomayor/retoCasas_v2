@@ -72,7 +72,7 @@ export default function SignUp() {
       } else {
         router.push("/home");
       }
-    } catch (error) {
+    } catch {
       setMsg({ type: "err", text: "Error de conexión." });
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export default function SignUp() {
     setLoading(true);
     try {
       await signIn("google", { callbackUrl: "/home" });
-    } catch (error) {
+    } catch {
       setMsg({ type: "err", text: "Error con Google." });
       setLoading(false);
     }

@@ -32,6 +32,8 @@ pip install -r requirements.txt
 
 ```bash
 # app/.env
+ML_SERVICE_URL=http://localhost:8000
+BASE_URL=http://localhost:3000
 
 # NextAuth Configuration
 NEXTAUTH_URL=http://localhost:3000

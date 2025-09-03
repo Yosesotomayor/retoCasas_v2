@@ -48,7 +48,6 @@ export const authOptions: AuthOptions = {
   },
   pages: {
     signIn: "/login",
-    signUp: "/signup",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -58,8 +57,9 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id as string;
+      if (token && session.user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session.user as any).id = token.id as string;
       }
       return session;
     },

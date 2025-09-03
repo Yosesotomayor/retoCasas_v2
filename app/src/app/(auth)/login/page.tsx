@@ -43,7 +43,7 @@ export default function LogIn() {
         setMsg({ type: "ok", text: "¡Iniciando sesión!" });
         router.push("/home");
       }
-    } catch (error) {
+    } catch {
       setMsg({ type: "err", text: "Error de conexión." });
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ export default function LogIn() {
     setLoading(true);
     try {
       await signIn("google", { callbackUrl: "/home" });
-    } catch (error) {
+    } catch {
       setMsg({ type: "err", text: "Error con Google." });
       setLoading(false);
     }
