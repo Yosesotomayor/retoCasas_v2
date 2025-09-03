@@ -46,3 +46,5 @@ reto_housing
 package-lock.json
 
 __pycache__
+.venv
+.next
