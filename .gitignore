@@ -48,3 +48,13 @@ package-lock.json
 __pycache__
 .venv
 .next
+
+# Terraform
+.terraform
+terraform.tfvars
+.terraform.lock.hcl
+terraform.tfstate
+
+# SSH Keys
+*.pem
+*.pub
