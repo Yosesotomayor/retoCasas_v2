@@ -87,7 +87,7 @@ export default async function Home() {
                     href="/login"
                     className="inline-flex items-center justify-center rounded-[10px]
                   font-extrabold uppercase tracking-[0.7px] px-5 py-3
-                  bg-[#000000] text-[#FFD43B] hover:bg-[#E6BD2F] active:translate-y-[1px] transition"
+                  bg-[#000000] text-[#FFD43B] hover:bg-[#1a1a1add] active:translate-y-[1px] transition"
                   >
                     Inicia sesión
                   </Link>
