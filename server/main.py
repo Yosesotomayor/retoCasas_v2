@@ -12,6 +12,10 @@ app = FastAPI(title="Server", version="0.1.0")
 def hello():
     return "Hello World"
 
+# predict
+@app.get("/predict")
+def predict():
+    return "Hello World - PREDICT"
 
 def main():
     host = os.getenv("HOST", "0.0.0.0")

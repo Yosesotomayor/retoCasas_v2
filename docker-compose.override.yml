@@ -1,28 +1,22 @@
 services:
-  ml-backend:
+  server-backend:
     build:
-      context: ./ML
-      dockerfile: backend/Dockerfile.dev
+      context: .
+      dockerfile: server/Dockerfile.dev
     ports:
       - "8000:8000"
     env_file:
       - .env
-    environment:
-      # URIs de MLflow (tracking y registry en DagsHub)
-      MLFLOW_TRACKING_URI: "https://dagshub.com/yosesotomayor/retoCasas_v2.mlflow"
-      MLFLOW_REGISTRY_URI: "https://dagshub.com/yosesotomayor/retoCasas_v2.mlflow"
-
-      # Modelo a cargar
-      MODEL_NAME: "elnet_lgbm"
-      MODEL_ALIAS: "champion"
-
-      # Puerto de tu app Flask (tu código ya lo usa)
-      PORT: "8000"
-
-      # MLflow
-      MLFLOW_TRACKING_USERNAME: "yosesotomayor"
-      MLFLOW_TRACKING_TOKEN: "${DAGSHUB_TOKEN}"
-      MLFLOW_TRACKING_PASSWORD: "${DAGSHUB_TOKEN}"
     volumes:
-      - ./ML:/app/ML
+      - ./server:/app
     restart: unless-stopped
+
+  # client-frontend:
+  #   build:
+  #     context: ./app
+  #     dockerfile: Dockerfile.dev
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./app:/app
+  #   restart: unless-stopped
