@@ -1,46 +1,92 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/assets/House_Price_Insights_transparent.png"
 
-// Coloca un archivo en /public/logo.png o ajusta la ruta/extension:
-
-type MsgType = "ok" | "err" | null; // Marcar un mensaje como correcto o error
+type MsgType = "ok" | "err" | null;
 
 export default function SignUp() {
-  const [user, setUser] = useState(""); // Nombre de usuario
-  const [pass, setPass] = useState(""); // Contraseña
-  const [pass2, setPass2] = useState(""); // Repetir contraseña
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [msg, setMsg] = useState<{ 
     type: MsgType;
      text: string }>
      ({ type: null,
     text: ""  });
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const onSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    if (!user.trim() || !pass || !pass2) {
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
       setMsg({ type: "err", text: "Completa todos los campos." });
       return;
     }
-    if (pass.length < 8 || !/[A-Z]/.test(pass) || !/[0-9]/.test(pass)) {
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
       setMsg({
         type: "err",
         text: "La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.",
       });
       return;
     }
-    if (pass !== pass2) {
+    if (password !== confirmPassword) {
       setMsg({ type: "err", text: "Las contraseñas no coinciden." });
       return;
     }
 
-    setMsg({ type: "ok", text: "¡Todo listo! Puedes continuar." });
+    setLoading(true);
+    setMsg({ type: null, text: "" });
 
-    // TODO: aquí dispara tu flujo real de registro (fetch/axios/Bubble/etc.)
-    // await api.register({ user, pass });
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMsg({ type: "err", text: data.error || "Error al registrarse" });
+        return;
+      }
+
+      setMsg({ type: "ok", text: "¡Registro exitoso! Iniciando sesión..." });
+      
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setMsg({ type: "err", text: "Error al iniciar sesión automáticamente" });
+      } else {
+        router.push("/home");
+      }
+    } catch (error) {
+      setMsg({ type: "err", text: "Error de conexión." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await signIn("google", { callbackUrl: "/home" });
+    } catch (error) {
+      setMsg({ type: "err", text: "Error con Google." });
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,36 +118,56 @@ export default function SignUp() {
         {/* Formulario */}
         <form className="text-left" onSubmit={onSubmit}>
           <div className="my-2">
-            <label htmlFor="user" className="block mb-1 text-[13px] text-[#4c4f56]">
-              Usuario
+            <label htmlFor="name" className="block mb-1 text-[13px] text-[#4c4f56]">
+              Nombre completo
             </label>
             <input
-              id="user"
+              id="name"
               type="text"
-              placeholder="Tu nombre de usuario"
-              autoComplete="username"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
+              placeholder="Tu nombre completo"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={loading}
               className="w-full px-3.5 py-3 rounded-[10px] border border-[#ddd] bg-[#F9F9F9] text-[15px]
                 focus:outline-none focus:border-[#FFD43B]
-                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition"
+                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition disabled:opacity-50"
             />
           </div>
 
           <div className="my-2">
-            <label htmlFor="pass" className="block mb-1 text-[13px] text-[#4c4f56]">
+            <label htmlFor="email" className="block mb-1 text-[13px] text-[#4c4f56]">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="tu@email.com"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              className="w-full px-3.5 py-3 rounded-[10px] border border-[#ddd] bg-[#F9F9F9] text-[15px]
+                focus:outline-none focus:border-[#FFD43B]
+                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition disabled:opacity-50"
+            />
+          </div>
+
+          <div className="my-2">
+            <label htmlFor="password" className="block mb-1 text-[13px] text-[#4c4f56]">
               Contraseña
             </label>
             <input
-              id="pass"
+              id="password"
               type="password"
               placeholder="Mínimo 8 caracteres"
               autoComplete="new-password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
               className="w-full px-3.5 py-3 rounded-[10px] border border-[#ddd] bg-[#F9F9F9] text-[15px]
                 focus:outline-none focus:border-[#FFD43B]
-                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition"
+                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition disabled:opacity-50"
             />
             <div className="mt-1 text-[12px] text-[#9FA4AD]">
               Usa al menos 8 caracteres, una mayúscula y un número.
@@ -109,40 +175,61 @@ export default function SignUp() {
           </div>
 
           <div className="my-2">
-            <label htmlFor="pass2" className="block mb-1 text-[13px] text-[#4c4f56]">
+            <label htmlFor="confirmPassword" className="block mb-1 text-[13px] text-[#4c4f56]">
               Confirma contraseña
             </label>
             <input
-              id="pass2"
+              id="confirmPassword"
               type="password"
               placeholder="Repítela"
               autoComplete="new-password"
-              value={pass2}
-              onChange={(e) => setPass2(e.target.value)}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
               className="w-full px-3.5 py-3 rounded-[10px] border border-[#ddd] bg-[#F9F9F9] text-[15px]
                 focus:outline-none focus:border-[#FFD43B]
-                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition"
+                focus:shadow-[0_0_0_3px_rgba(255,212,59,0.35)] focus:bg-white transition disabled:opacity-50"
             />
           </div>
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full mt-2 px-4 py-3 rounded-[10px] font-extrabold uppercase tracking-[0.7px]
-              bg-[#FFD43B] text-[#1A1A1A] hover:bg-[#E6BD2F] active:translate-y-[1px] transition"
+              bg-[#FFD43B] text-[#1A1A1A] hover:bg-[#E6BD2F] active:translate-y-[1px] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Registro
+            {loading ? "Registrando..." : "Registro"}
           </button>
         </form>
+
+        {/* Separador */}
+        <div className="flex items-center my-4">
+          <div className="flex-1 h-px bg-gray-200"></div>
+          <span className="px-3 text-sm text-gray-500">o</span>
+          <div className="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        {/* Google Sign In */}
+        <button
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="w-full px-4 py-3 rounded-[10px] border border-[#ddd] bg-white hover:bg-gray-50 
+            flex items-center justify-center gap-3 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          {loading ? "Conectando..." : "Continuar con Google"}
+        </button>
 
         {/* Links */}
         <div className="mt-4 text-[14px] text-[#555] text-center">
           ¿Ya tienes cuenta?{" "}
           <a href="/login" className="text-[#2C3E50] hover:text-[#FFD43B] underline-offset-2 hover:underline">
             Inicia sesión
-          </a>{" "}
-          ·{" "}
-          <a href="/recuperar" className="text-[#2C3E50] hover:text-[#FFD43B] underline-offset-2 hover:underline">
-            Olvidé mi contraseña
           </a>
         </div>
 
