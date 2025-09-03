@@ -14,24 +14,30 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 
 import os
+
+import sys
+
+sys.path.append("../../")
+
 plt.style.use("seaborn-v0_8")
 sns.set_palette("husl")
 
-train_data = "../../data/housing_data/train.csv"
-test_data = "../../data/housing_data/test.csv"
 
-def load_data():
+def load_data(sub_dir: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    train_data = os.path.join(sub_dir, "train.csv")
+    test_data = os.path.join(sub_dir, "test.csv")
     if os.path.exists(train_data):
         df_train = pd.read_csv(train_data)
     else:
         print("No se encuentra el archivo de entrenamiento")
-        
+
     if os.path.exists(test_data):
         df_test = pd.read_csv(test_data)
     else:
         print("No se encuentra el archivo de prueba")
-        
+
     return df_train, df_test
+
 
 def plot_hist_per_columns(df, cols, bins=20):
     if isinstance(cols, str):
