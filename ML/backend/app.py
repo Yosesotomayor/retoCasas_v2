@@ -8,10 +8,6 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 import mlflow
 
-# Opcional: si usas utilidades propias
-# from ML.utils.mlflow_flow import set_tracking  # <- no lo usaremos para evitar confusiones
-
-# Para imports relativos a tu repo
 sys.path.append("../../")
 
 # ================== Config ==================
