@@ -1,0 +1,14 @@
+services:
+  app:
+    image: zamcv/house-app:v0.0.1
+    network_mode: host
+    env_file:
+      - .env.app
+    restart: unless-stopped
+  
+  server:
+    image: zamcv/house-server:v0.0.1
+    network_mode: host
+    env_file:
+      - .env.server
+    restart: unless-stopped
