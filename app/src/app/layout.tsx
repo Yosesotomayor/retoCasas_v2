@@ -11,7 +11,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="es" className="bg-gray-800">
       <body>
         <Providers>
-          <div className="min-h-screen grid grid-rows-[auto_1fr]">
+          <div className="min-h-screen grid grid-rows-[auto_1fr] h-full">
             <Topbar />
             {children}
           </div>

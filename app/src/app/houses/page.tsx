@@ -14,15 +14,14 @@ export default async function Houses() {
   const houses: House[] = Array.isArray(data) ? data : data.houses || [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto px-4 py-8 flex flex-col overflow-auto h-full">
       <h1 className="text-3xl font-bold mb-6">Lista de Casas</h1>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap gap-5 justify-center">
         {houses.map((house) => (
           <Link 
             key={house.id} 
             href={`/houses/${house.id}`} 
-            className="block"
+            className="block w-full sm:w-auto"
           >
             <HouseElement
               title={house.title}

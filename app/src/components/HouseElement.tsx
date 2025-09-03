@@ -8,16 +8,17 @@ interface HouseElementProps {
 
 export default function HouseElement({ title, imageUrl }: HouseElementProps) {
   return (
-    <div className="p-4 border border-gray-200 hover:shadow-lg transition-shadow rounded-md">
+    <div className="p-4 border border-gray-200 hover:shadow-lg transition-shadow rounded-md w-full sm:w-[25rem]">
       <h2 className="text-xl font-semibold mb-2">{title}</h2>
       {imageUrl && (
-        <Image
-          src={imageUrl}
-          alt={title}
-          className="object-cover rounded-md min-w-full min-h-full"
-          width={300}
-          height={200}
-        />
+        <div className="w-full h-[16rem] relative">
+          <Image
+            src={imageUrl}
+            alt={title}
+            className="object-cover rounded-md absolute w-full h-full"
+            fill
+          />
+        </div>
       )}
     </div>
   );
