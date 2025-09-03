@@ -40,6 +40,16 @@ NEXTAUTH_SECRET=your-secret-key-here-replace-with-a-secure-random-string
 # Google OAuth
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=yout_client_secret
+
+# MLFlow
+
+MLFLOW_TRACKING_URI=model_URI
+MLFLOW_REGISTRY_URI=model_URI
+DAGSHUB_TOKEN=token
+
+MODEL_NAME:elnet_lgbm
+MODEL_ALIAS:champion
+
 ```
 
 🤖 Machine Learning

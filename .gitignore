@@ -44,3 +44,5 @@ ML/models/**/model_training/mlruns/
 reto_housing
 .DS_Store
 package-lock.json
+
+__pycache__
