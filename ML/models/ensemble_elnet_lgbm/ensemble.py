@@ -1,7 +1,7 @@
 import sys
 
 sys.path.append("../../../")
-from ML.utils.utils_yose import build_preprocessor
+from utils.utils_yose import build_preprocessor
 
 import numpy as np
 

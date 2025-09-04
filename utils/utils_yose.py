@@ -383,7 +383,6 @@ def fill_domain_na(df_all: pd.DataFrame) -> pd.DataFrame:
     for col in categorical_columns:
         if df[col].isna().any():
             df[col] = df[col].fillna("Unknown")
-
     return df
 
 

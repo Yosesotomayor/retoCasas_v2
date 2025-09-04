@@ -34,6 +34,10 @@ WORKDIR /app
 # Copy the virtual environment and application from builder
 COPY --from=builder --chown=appuser:appuser /app /app
 
+# Copy utils and data
+COPY utils/ /app/utils/
+COPY data/ /app/data/
+
 # Set environment variables
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
