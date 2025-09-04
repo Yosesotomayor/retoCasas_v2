@@ -6,7 +6,6 @@ import uvicorn
 
 import numpy as np
 import pandas as pd
-from typing import Any
 
 import sys
 sys.path.append("../")
