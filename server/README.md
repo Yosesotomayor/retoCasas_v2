@@ -16,3 +16,5 @@ DEBUG=true
 ```bash
 uv run python main.py
 ```
+
+\

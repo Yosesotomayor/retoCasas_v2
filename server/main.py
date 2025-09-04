@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 import numpy as np
 
+import sys
+sys.path.append("../")
+
 from utils.mlflow_flow import set_tracking
 from utils.utils_yose import load_data, make_features
 
