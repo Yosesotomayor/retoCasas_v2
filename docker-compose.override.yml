@@ -8,9 +8,9 @@ services:
     env_file:
       - .env
     volumes:
-      - ./server:/app
-      - ./utils:/app/utils:ro
-      - ./data:/app/data:ro
+    - ./server:/app/server
+    - ./utils:/app/utils:ro
+    - ./data:/app/data:ro
     restart: unless-stopped
 
   # client-frontend:

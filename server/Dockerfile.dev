@@ -1,57 +1,29 @@
-# Multi-stage build for optimized production image
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim
 
-# Install uv
+# Runtime libs for numpy/scipy/lightgbm (OpenMP/Fortran)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       libgomp1 \
+       libgfortran5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# uv para ejecutar con lockfile
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Set working directory
+# Trabajamos desde /app/server pero copiamos todo para que PYTHONPATH=/app sirva
 WORKDIR /app
-
-# Enable bytecode compilation
-ENV UV_COMPILE_BYTECODE=1
-
-# Copy dependency files
-COPY server/pyproject.toml server/uv.lock ./
-
-# Install dependencies
-RUN uv sync --frozen --no-install-project --no-dev
-
-# Copy application code
 COPY . .
+WORKDIR /app/server
 
-# Install the project
-RUN uv sync --frozen --no-dev
+# Ajustes básicos y cache de uv en /tmp (siempre escribible)
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/app" \
+    XDG_CACHE_HOME=/tmp/.cache \
+    UV_CACHE_DIR=/tmp/.cache/uv \
+    UV_LINK_MODE=copy
 
-# Production stage
-FROM python:3.11-slim
-
-# Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
-# Set working directory
-WORKDIR /app
-
-# Copy the virtual environment and application from builder
-COPY --from=builder --chown=appuser:appuser /app /app
-
-# requirements
-#COPY requirements.txt ./
-#RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy utils and data
-COPY utils/ /app/utils/
-COPY data/ /app/data/
-
-# Set environment variables
-ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
-
-# Switch to non-root user
-USER appuser
-
-# Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["python", "main.py"]
+# Ejecuta con uv y el lock existente
+CMD ["uv", "run", "--frozen", "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

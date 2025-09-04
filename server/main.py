@@ -1,14 +1,13 @@
 import os
-import uvicorn
 from fastapi import FastAPI, HTTPException, Body
 from typing import Any, Dict, List, Union
 from dotenv import load_dotenv
+import uvicorn
 
 import numpy as np
 import pandas as pd
 from typing import Any
 
-import json
 
 import sys
 sys.path.append("../")
@@ -30,8 +29,8 @@ DATA_DIR = os.getenv("DATA_DIR", "data/housing_data/")
 app = FastAPI(title="Server", version="0.1.0")
 
 @app.get("/")
-def hello():
-    return "Hello World"
+def health_check():
+    return {"status": "ok"}
 
 @app.post('/predict')
 def predict(
@@ -71,9 +70,8 @@ def predict(
             "attempts": load_errors,
         })
     try:
-        # Normalizar el payload a DataFrame
         if isinstance(data, dict):
-            df_in = pd.DataFrame([data])           # una fila
+            df_in = pd.DataFrame([data])
         elif isinstance(data, list):
             if not data:
                 raise HTTPException(status_code=400, detail="Payload vacío: envía al menos un registro")
