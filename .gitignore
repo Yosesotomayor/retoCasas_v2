@@ -58,3 +58,4 @@ terraform.tfstate
 *.pem
 *.pub
 terraform.tfstate.backup
+uv.lock
