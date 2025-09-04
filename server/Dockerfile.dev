@@ -36,6 +36,7 @@ COPY --from=builder --chown=appuser:appuser /app /app
 
 # requirements
 COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy utils and data
 COPY utils/ /app/utils/
