@@ -13,8 +13,6 @@ sys.path.append("../")
 from utils.mlflow_flow import set_tracking
 from utils.utils_yose import make_features
 
-from ML.models.ensemble_elnet_lgbm import ensemble
-
 import mlflow
 from mlflow.tracking import MlflowClient
 
@@ -86,7 +84,6 @@ def predict(
         return {"predictions": preds.tolist() if hasattr(preds, "tolist") else list(preds)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al predecir: {type(e).__name__}: {str(e)[:200]}")
-
 
 def main():
     host = os.getenv("HOST", "0.0.0.0")
