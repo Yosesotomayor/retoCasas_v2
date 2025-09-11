@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.dev    # <-- ajusta si usas otro Dockerfile
+          file: server/Dockerfile.dev    # usamos el Dockerfile ubicado en /server
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
