@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException, Body
 from typing import Any, Dict, List, Union
 from dotenv import load_dotenv
 import uvicorn
+import joblib
+import json
 
 import numpy as np
 import pandas as pd
@@ -11,7 +13,7 @@ import sys
 sys.path.append("../")
 
 from utils.mlflow_flow import set_tracking
-from utils.utils_yose import make_features
+from utils.utils_yose import make_features, load_data
 
 import mlflow
 from mlflow.tracking import MlflowClient
@@ -28,6 +30,51 @@ app = FastAPI(title="Server", version="0.1.0")
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
+@app.post("/predict-app")
+def predict_app(
+    data: Union[Dict[str, Any], List[Dict[str, Any]]] = Body(...)
+):
+    df_train, df_test = load_data("../data/housing_data/")
+    with open("models/weights.json", "r") as f:
+            weights = json.load(f)
+            models = []
+            models_names = []
+            for root, dirs, files in os.walk("models"):
+                for file in files:
+                        print(file)
+                        if file.endswith(".pkl"):
+                            models_names.append(file)
+                for model in models_names:    
+                    with open(f"models/{model}", "rb") as f:
+                        models.append(joblib.load(f))
+    model_lgbm = models[1]
+    model_elnet = models[0]
+    weights_lgbm = weights["lgbm"]
+    weights_elnet = weights["elasticnet"]
+    X = make_features(df_test.iloc[[0]])
+    p1 = model_elnet.predict(X)
+    p2 = model_lgbm.predict(X)
+    pred = np.expm1(weights_elnet * p1 + weights_lgbm * p2)
+    return pred
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.post('/predict')
 def predict(

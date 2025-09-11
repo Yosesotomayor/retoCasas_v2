@@ -270,7 +270,6 @@ def add_engineered_features(df: pd.DataFrame) -> pd.DataFrame:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
 
-    # --- 2) Features numéricas (ya en float/int) ---
     df["TotalSF"] = (
         df.get("TotalBsmtSF", 0).fillna(0)
         + df.get("1stFlrSF", 0).fillna(0)

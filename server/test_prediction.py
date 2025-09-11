@@ -1,14 +1,14 @@
 import requests
 import numpy as np
 import pandas as pd
-import sys
+import sys, json, os, joblib
 import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("test_prediction")
 sys.path.append("../")
 from utils.utils_yose import load_data
 
-url = "http://ec2-18-232-61-103.compute-1.amazonaws.com:8000/predict"
+url = "http://ec2-18-232-61-103.compute-1.amazonaws.com:8000/predict-app"
 data_url = "../data/housing_data/"
 _, test = load_data(data_url)
 test = test.drop(["Id"], axis=1)

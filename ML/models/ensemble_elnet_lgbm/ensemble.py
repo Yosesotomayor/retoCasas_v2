@@ -26,6 +26,7 @@ class EnsembleModel:
         self.lgbm = None
         self.r2 = None
         self.rmse = None
+        self.mse = None
         self.rmse_std = None
         self.rstate = rstate
         self.base_models = {
@@ -62,8 +63,9 @@ class EnsembleModel:
             np.column_stack([fold_preds[n] for n in self.base_models]), axis=1
         )
         rmse = root_mean_squared_error(y_va, p_ens)
+        mse = np.mean((y_va - p_ens) ** 2)
         r2 = r2_score(y_va, p_ens)
-        fold_metrics.append({"fold": fold, "rmse": float(rmse), "r2": float(r2)})
+        fold_metrics.append({"fold": fold, "rmse": float(rmse), "r2": float(r2) ,"mse": float(mse)})
         for name in self.base_models:
             oof_preds[name][va_idx] = fold_preds[name]
         oof_idx_mask[va_idx] = True
@@ -71,10 +73,12 @@ class EnsembleModel:
         cv_rmse_mean = float(np.mean([m["rmse"] for m in fold_metrics]))
         cv_rmse_std = float(np.std([m["rmse"] for m in fold_metrics]))
         cv_r2_mean = float(np.mean([m["r2"] for m in fold_metrics]))
+        cv_mse_mean = float(np.mean([m["mse"] for m in fold_metrics]))
 
         print(f"CV RMSE mean: {cv_rmse_mean:.4f}")
         print(f"CV RMSE std: {cv_rmse_std:.4f}")
         print(f"CV R2 mean: {cv_r2_mean:.4f}")
+        print(f"CV MSE mean: {cv_mse_mean:.4f}")
 
         grid_step = 0.05
         best = {"weights": None, "rmse": np.inf, "r2": -np.inf}
@@ -89,6 +93,7 @@ class EnsembleModel:
                 best["weights"] = (w1, w2)
                 best["rmse"] = rmse
                 best["r2"] = r2
+                best['mse'] = mse
 
         self.weights = {"elasticnet": best["weights"][0], "lgbm": best["weights"][1]}
 
@@ -104,6 +109,7 @@ class EnsembleModel:
         self.r2 = cv_r2_mean
         self.rmse = cv_rmse_mean
         self.rmse_std = cv_rmse_std
+        self.mse = cv_mse_mean
         
         return self
 
@@ -123,6 +129,7 @@ class EnsembleModel:
             "r2": self.r2,
             "rmse": self.rmse,
             "rmse_std": self.rmse_std,
+            "mse": self.mse
         }
 
     def _build_final_pipes(self, X, y, use_log_target=True):
