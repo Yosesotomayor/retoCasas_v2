@@ -23,5 +23,6 @@ dependencies = [
     "graphviz==0.21",
     "psutil==7.0.0",
     "pyarrow==19.0.1",
-    "cffi==1.17.1"
+    "cffi==1.17.1",
+    "uvicorn>=0.30"
 ]
