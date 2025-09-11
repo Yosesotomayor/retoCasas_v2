@@ -1,42 +1,42 @@
 FROM python:3.12-slim
 
-# Libs nativas
+# Libs nativas necesarias
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       libgomp1 \
-       libgfortran5 \
-    && rm -rf /var/lib/apt/lists/*
+ && apt-get install -y --no-install-recommends \
+    libgomp1 libgfortran5 \
+ && rm -rf /var/lib/apt/lists/*
 
 # uv binario
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# ---- Instalar dependencias con uv ----
-# OJO: tu pyproject.toml está en la RAÍZ del repo (no en /server)
+# --- Instalar deps con el pyproject correcto (el de /server) ---
 WORKDIR /app
-COPY pyproject.toml ./
-# Si tienes uv.lock, cópialo también; si no, el RUN lo genera
-# COPY uv.lock ./
 
+# Copiamos SOLO manifiestos primero (aprovecha cache)
+COPY server/pyproject.toml server/
+# Si ya tienes lock, descomenta la siguiente línea
+# COPY server/uv.lock server/
+
+# Config para uv y para usar SIEMPRE el venv de uv
 ENV XDG_CACHE_HOME=/tmp/.cache \
     UV_CACHE_DIR=/tmp/.cache/uv \
     UV_LINK_MODE=copy \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app" \
-    PATH="/app/.venv/bin:${PATH}"
+    PATH="/app/server/.venv/bin:${PATH}" 
 
-# Si hay lock, usa --frozen; si no, créalo y sincroniza
-RUN if [ -f uv.lock ]; then \
-      uv sync --frozen --no-dev ; \
-    else \
-      uv lock && uv sync --no-dev ; \
-    fi
+# Genera/usa lock e instala SIN dev
+RUN cd server && \
+    if [ -f uv.lock ]; then uv sync --frozen --no-dev; \
+    else uv lock && uv sync --no-dev; fi
 
-# ---- Copiar el código después para aprovechar cache ----
-COPY . .
-WORKDIR /app/server
+# --- Copiamos el código después (no toca el .venv) ---
+COPY . /app
 
+# Puerto
 EXPOSE 8000
 
-# Arranque usando el python del .venv (gracias al PATH de arriba)
+# Arranque: python del venv (gracias al PATH)
+WORKDIR /app/server
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
