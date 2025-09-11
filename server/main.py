@@ -27,36 +27,87 @@ DATA_DIR = os.getenv("DATA_DIR", "data/housing_data/")
 
 app = FastAPI(title="Server", version="0.1.0")
 
+
+# ===== Modelos locales (para /predict-app) cargados en startup =====
+MODELS = []
+WEIGHTS = {}
+
+@app.on_event("startup")
+def _load_models_on_startup():
+    """Carga modelos .pkl y weights.json de server/models una vez al arrancar."""
+    import glob, os
+    global MODELS, WEIGHTS
+    models_dir = os.path.join(os.path.dirname(__file__), "models")
+    weights_path = os.path.join(models_dir, "weights.json")
+
+    MODELS = []
+    WEIGHTS = {}
+
+    # Cargar pesos (si no existe, usar 0.5/0.5)
+    if os.path.exists(weights_path):
+        with open(weights_path, "r") as f:
+            WEIGHTS.update(json.load(f))
+    else:
+        WEIGHTS.update({"elasticnet": 0.5, "lgbm": 0.5})
+
+    # Cargar modelos .pkl (orden determinista por nombre)
+    for mf in sorted(glob.glob(os.path.join(models_dir, "*.pkl"))):
+        try:
+            with open(mf, "rb") as fh:
+                MODELS.append(joblib.load(fh))
+        except Exception as e:
+            print(f"[startup] Warning: no se pudo cargar {mf}: {type(e).__name__}: {e}")
+
+    print(f"[startup] Modelos cargados={len(MODELS)}, weights={WEIGHTS}")
+
+
 @app.get("/")
 def health_check():
     return {"status": "ok"}
-
 @app.post("/predict-app")
 def predict_app(
     data: Union[Dict[str, Any], List[Dict[str, Any]]] = Body(...)
 ):
-    df_train, df_test = load_data("../data/housing_data/")
-    with open("models/weights.json", "r") as f:
-            weights = json.load(f)
-            models = []
-            models_names = []
-            for root, dirs, files in os.walk("models"):
-                for file in files:
-                        print(file)
-                        if file.endswith(".pkl"):
-                            models_names.append(file)
-                for model in models_names:    
-                    with open(f"models/{model}", "rb") as f:
-                        models.append(joblib.load(f))
-    model_lgbm = models[1]
-    model_elnet = models[0]
-    weights_lgbm = weights["lgbm"]
-    weights_elnet = weights["elasticnet"]
-    X = make_features(df_test.iloc[[0]])
-    p1 = model_elnet.predict(X)
-    p2 = model_lgbm.predict(X)
-    pred = np.expm1(weights_elnet * p1 + weights_lgbm * p2)
-    return pred
+    """Predice con modelos locales en ./server/models.
+    Acepta un objeto JSON o una lista de objetos.
+    """
+    try:
+        # Validar payload
+        if isinstance(data, dict):
+            df_in = pd.DataFrame([data])
+        elif isinstance(data, list):
+            if not data:
+                raise HTTPException(status_code=400, detail="Payload vacío: envía al menos un registro")
+            if not all(isinstance(x, dict) for x in data):
+                raise HTTPException(status_code=400, detail="Si envías una lista, debe ser lista de objetos (dict)")
+            df_in = pd.DataFrame(data)
+        else:
+            raise HTTPException(status_code=400, detail="Formato no soportado: usa un objeto JSON o una lista de objetos")
+
+        # Features
+        fe_df = make_features(df_in)
+
+        # Modelos cargados
+        if not MODELS:
+            raise HTTPException(status_code=500, detail="Modelos no cargados: sube .pkl a server/models y redeploy")
+
+        if len(MODELS) < 2:
+            raise HTTPException(status_code=500, detail="Faltan modelos .pkl (se esperan al menos 2)")
+
+        # Pesos
+        w_el = float(WEIGHTS.get("elasticnet", 0.5))
+        w_lg = float(WEIGHTS.get("lgbm", 0.5))
+
+        # Predicción (tomamos los dos primeros modelos cargados de forma determinista)
+        p_el = np.array(MODELS[0].predict(fe_df))
+        p_lg = np.array(MODELS[1].predict(fe_df))
+        preds = np.expm1(w_el * p_el + w_lg * p_lg)
+
+        return {"predictions": preds.tolist()}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en predict-app: {type(e).__name__}: {str(e)[:200]}")
     
 
 

@@ -1,0 +1,25 @@
+{
+  "family": "retoCasas_v2",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::434793036797:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::434793036797:role/ecsTaskRole",
+  "containerDefinitions": [
+    {
+      "name": "retocasas_v2",
+      "image": "yosesotomayor/retocasas_v2:20250911-014339",
+      "essential": true,
+      "portMappings": [{ "containerPort": 8000, "protocol": "tcp" }],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/retoCasas_v2",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

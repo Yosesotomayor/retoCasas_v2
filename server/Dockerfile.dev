@@ -25,6 +25,7 @@ ENV XDG_CACHE_HOME=/tmp/.cache \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app" \
     PATH="/app/server/.venv/bin:${PATH}" 
+ENV PATH="/app/server/.venv/bin:$PATH"
 
 # Genera/usa lock e instala SIN dev
 RUN cd server && \
@@ -37,6 +38,5 @@ COPY . /app
 # Puerto
 EXPOSE 8000
 
-# Arranque: python del venv (gracias al PATH)
 WORKDIR /app/server
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["/app/server/.venv/bin/python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
