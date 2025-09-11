@@ -44,8 +44,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./server/Dockerfile.dev    # usamos el Dockerfile ubicado en /server
+          file: ./server/Dockerfile.dev
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_tag }}
