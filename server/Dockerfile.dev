@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-# Runtime libs para numpy/scipy/lightgbm (OpenMP/Fortran)
+# Libs nativas
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        libgomp1 \
@@ -10,37 +10,33 @@ RUN apt-get update \
 # uv binario
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Trabajo en /app/server
-WORKDIR /app/server
+# ---- Instalar dependencias con uv ----
+# OJO: tu pyproject.toml está en la RAÍZ del repo (no en /server)
+WORKDIR /app
+COPY pyproject.toml ./
+# Si tienes uv.lock, cópialo también; si no, el RUN lo genera
+# COPY uv.lock ./
 
-# ---- Etapa de deps reproducibles (primero manifiestos) ----
-# Copia SOLO los manifiestos para no invalidar cache en cada cambio de código
-COPY server/pyproject.toml ./
-# Si ya tienes uv.lock en el repo más adelante, descomenta la siguiente línea:
-# COPY server/uv.lock ./
-
-# Caches de uv en /tmp para evitar permisos en runtime
 ENV XDG_CACHE_HOME=/tmp/.cache \
     UV_CACHE_DIR=/tmp/.cache/uv \
     UV_LINK_MODE=copy \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH="/app"
+    PYTHONPATH="/app" \
+    PATH="/app/.venv/bin:${PATH}"
 
-# Genera lock (si no existe) e instala sin dev
+# Si hay lock, usa --frozen; si no, créalo y sincroniza
 RUN if [ -f uv.lock ]; then \
       uv sync --frozen --no-dev ; \
     else \
       uv lock && uv sync --no-dev ; \
     fi
 
-# ---- Copia del código (después de instalar deps) ----
-WORKDIR /app
+# ---- Copiar el código después para aprovechar cache ----
 COPY . .
 WORKDIR /app/server
 
-# Puerto de la app
 EXPOSE 8000
 
-# Arranque: NO sincroniza deps en runtime
+# Arranque usando el python del .venv (gracias al PATH de arriba)
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
