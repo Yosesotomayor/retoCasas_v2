@@ -71,4 +71,4 @@ jobs:
         run: |
           aws ecs wait services-stable \
             --cluster "${{ env.CLUSTER }}" \
-            --services "${{ env.SERVICE }}"
+            --services "${{ env.SERVICE }}" 
