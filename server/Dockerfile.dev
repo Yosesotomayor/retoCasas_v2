@@ -1,29 +1,46 @@
 FROM python:3.12-slim
 
-# Runtime libs for numpy/scipy/lightgbm (OpenMP/Fortran)
+# Runtime libs para numpy/scipy/lightgbm (OpenMP/Fortran)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        libgomp1 \
        libgfortran5 \
     && rm -rf /var/lib/apt/lists/*
 
-# uv para ejecutar con lockfile
+# uv binario
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Trabajamos desde /app/server pero copiamos todo para que PYTHONPATH=/app sirva
+# Trabajo en /app/server
+WORKDIR /app/server
+
+# ---- Etapa de deps reproducibles (primero manifiestos) ----
+# Copia SOLO los manifiestos para no invalidar cache en cada cambio de código
+COPY server/pyproject.toml ./
+# Si ya tienes uv.lock en el repo más adelante, descomenta la siguiente línea:
+# COPY server/uv.lock ./
+
+# Caches de uv en /tmp para evitar permisos en runtime
+ENV XDG_CACHE_HOME=/tmp/.cache \
+    UV_CACHE_DIR=/tmp/.cache/uv \
+    UV_LINK_MODE=copy \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH="/app"
+
+# Genera lock (si no existe) e instala sin dev
+RUN if [ -f uv.lock ]; then \
+      uv sync --frozen --no-dev ; \
+    else \
+      uv lock && uv sync --no-dev ; \
+    fi
+
+# ---- Copia del código (después de instalar deps) ----
 WORKDIR /app
 COPY . .
 WORKDIR /app/server
 
-# Ajustes básicos y cache de uv en /tmp (siempre escribible)
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONPATH="/app" \
-    XDG_CACHE_HOME=/tmp/.cache \
-    UV_CACHE_DIR=/tmp/.cache/uv \
-    UV_LINK_MODE=copy
-
+# Puerto de la app
 EXPOSE 8000
 
-# Ejecuta con uv y el lock existente
-CMD ["uv", "run", "--frozen", "python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Arranque: NO sincroniza deps en runtime
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
