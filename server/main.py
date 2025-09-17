@@ -112,18 +112,6 @@ def predict_app(
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 @app.post('/predict')
 def predict(
     data: Union[Dict[str, Any], List[Dict[str, Any]]] = Body(...)

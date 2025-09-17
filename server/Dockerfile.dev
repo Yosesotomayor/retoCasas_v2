@@ -1,42 +1,41 @@
+# syntax=docker/dockerfile:1.7
 FROM python:3.12-slim
 
-# Libs nativas necesarias
+# Dependencias nativas (ajusta según tus libs)
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    libgomp1 libgfortran5 \
+    libgomp1 libgfortran5 ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # uv binario
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# --- Instalar deps con el pyproject correcto (el de /server) ---
+# Trabajamos dentro de /app
 WORKDIR /app
 
-# Copiamos SOLO manifiestos primero (aprovecha cache)
-COPY server/pyproject.toml server/
-# Si ya tienes lock, descomenta la siguiente línea
-# COPY server/uv.lock server/
+# Copiamos sólo los manifiestos para cache de deps
+COPY server/pyproject.toml server/pyproject.toml
+# Asegúrate de tener el lockfile generado con: (en tu máquina) `cd server && uv lock`
+COPY server/uv.lock server/uv.lock
 
-# Config para uv y para usar SIEMPRE el venv de uv
+# Variables para uv y venv
 ENV XDG_CACHE_HOME=/tmp/.cache \
     UV_CACHE_DIR=/tmp/.cache/uv \
     UV_LINK_MODE=copy \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH="/app" \
-    PATH="/app/server/.venv/bin:${PATH}" 
-ENV PATH="/app/server/.venv/bin:$PATH"
+    UV_PROJECT="/app/server" \
+    PATH="/app/server/.venv/bin:${PATH}"
 
-# Genera/usa lock e instala SIN dev
-RUN cd server && \
-    if [ -f uv.lock ]; then uv sync --frozen --no-dev; \
-    else uv lock && uv sync --no-dev; fi
+# Instala dependencias exactamente como en el lockfile (sin dev)
+RUN uv sync --frozen --no-dev
 
-# --- Copiamos el código después (no toca el .venv) ---
+# Ahora sí copiamos el resto del código (no invalida la capa de deps)
 COPY . /app
 
-# Puerto
 EXPOSE 8000
-
 WORKDIR /app/server
-ENTRYPOINT ["/app/server/.venv/bin/python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Puedes usar CMD; PATH ya apunta al venv
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

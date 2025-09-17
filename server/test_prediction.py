@@ -8,8 +8,8 @@ log = logging.getLogger("test_prediction")
 sys.path.append("../")
 from utils.utils_yose import load_data
 
-#url = "http://ec2-18-232-61-103.compute-1.amazonaws.com:8000/predict-app"
-url = "http://ec2-13-219-179-15.compute-1.amazonaws.com:8000/predict"
+url = "http://ec2-54-175-116-11.compute-1.amazonaws.com:8000/predict-app"
+#url = "http://127.0.0.1:8000/predict-app"
 data_url = "../data/housing_data/"
 _, test = load_data(data_url)
 test = test.drop(["Id"], axis=1)
