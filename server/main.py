@@ -17,6 +17,7 @@ from utils.utils_yose import make_features
 
 import mlflow
 from mlflow.tracking import MlflowClient
+from server.database import Database
 
 load_dotenv()
 
@@ -167,6 +168,113 @@ def predict(
         return {"predictions": preds.tolist() if hasattr(preds, "tolist") else list(preds)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al predecir: {type(e).__name__}: {str(e)[:200]}")
+    
+@app.post("/users/")
+async def create_user(nombre: str, email: str, password_hash: str, fecha_registro: str, tel: str):
+    """
+    Endpoint para crear un nuevo usuario.
+    """
+    try:
+        await Database.create_user(nombre, email, password_hash, fecha_registro, tel)
+        return {"message": "Usuario creado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al crear usuario: {type(e).__name__}: {str(e)}")
+
+
+@app.delete("/users/{user_id}")
+async def delete_user(user_id: int):
+    """
+    Endpoint para eliminar un usuario por su ID.
+    """
+    try:
+        await Database.delete_user(user_id)
+        return {"message": f"Usuario con ID {user_id} eliminado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar usuario: {type(e).__name__}: {str(e)}")
+
+
+@app.put("/users/{user_id}")
+async def update_user(user_id: int, updates: dict):
+    """
+    Endpoint para actualizar un usuario por su ID.
+    """
+    try:
+        await Database.update_user(user_id, **updates)
+        return {"message": f"Usuario con ID {user_id} actualizado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar usuario: {type(e).__name__}: {str(e)}")
+
+
+@app.post("/payments/")
+async def create_payment(id_usuario: int, monto: float, fecha_pago: str, metodo_pago: str, estatus: str, id_transac_externa: str):
+    """
+    Endpoint para crear un nuevo pago.
+    """
+    try:
+        await Database.create_payment(id_usuario, monto, fecha_pago, metodo_pago, estatus, id_transac_externa)
+        return {"message": "Pago creado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al crear pago: {type(e).__name__}: {str(e)}")
+
+
+@app.delete("/payments/{payment_id}")
+async def delete_payment(payment_id: int):
+    """
+    Endpoint para eliminar un pago por su ID.
+    """
+    try:
+        await Database.delete_payment(payment_id)
+        return {"message": f"Pago con ID {payment_id} eliminado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar pago: {type(e).__name__}: {str(e)}")
+
+
+@app.put("/payments/{payment_id}")
+async def update_payment(payment_id: int, updates: dict):
+    """
+    Endpoint para actualizar un pago por su ID.
+    """
+    try:
+        await Database.update_payment(payment_id, **updates)
+        return {"message": f"Pago con ID {payment_id} actualizado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar pago: {type(e).__name__}: {str(e)}")
+
+
+@app.post("/consultas/")
+async def create_consulta(id_usuario: int, fecha_consulta: str, datos_entrada: str, prediccion: float):
+    """
+    Endpoint para crear una nueva consulta.
+    """
+    try:
+        await Database.create_consulta(id_usuario, fecha_consulta, datos_entrada, prediccion)
+        return {"message": "Consulta creada exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al crear consulta: {type(e).__name__}: {str(e)}")
+
+
+@app.delete("/consultas/{consulta_id}")
+async def delete_consulta(consulta_id: int):
+    """
+    Endpoint para eliminar una consulta por su ID.
+    """
+    try:
+        await Database.delete_consulta(consulta_id)
+        return {"message": f"Consulta con ID {consulta_id} eliminada exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al eliminar consulta: {type(e).__name__}: {str(e)}")
+
+
+@app.put("/consultas/{consulta_id}")
+async def update_consulta(consulta_id: int, updates: dict):
+    """
+    Endpoint para actualizar una consulta por su ID.
+    """
+    try:
+        await Database.update_consulta(consulta_id, **updates)
+        return {"message": f"Consulta con ID {consulta_id} actualizada exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar consulta: {type(e).__name__}: {str(e)}")
 
 def main():
     host = os.getenv("HOST", "0.0.0.0")
