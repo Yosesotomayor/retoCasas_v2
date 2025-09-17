@@ -9,7 +9,7 @@ sys.path.append("../")
 from utils.utils_yose import load_data
 
 #url = "http://ec2-18-232-61-103.compute-1.amazonaws.com:8000/predict-app"
-url = "http://ec2-13-219-179-15.compute-1.amazonaws.com:8000/predict-app"
+url = "http://ec2-13-219-179-15.compute-1.amazonaws.com:8000/predict"
 data_url = "../data/housing_data/"
 _, test = load_data(data_url)
 test = test.drop(["Id"], axis=1)

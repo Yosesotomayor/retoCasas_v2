@@ -8,12 +8,12 @@ import json
 
 import numpy as np
 import pandas as pd
-
+import glob, os
 import sys
 sys.path.append("../")
 
 from utils.mlflow_flow import set_tracking
-from utils.utils_yose import make_features, load_data
+from utils.utils_yose import make_features
 
 import mlflow
 from mlflow.tracking import MlflowClient
@@ -34,8 +34,6 @@ WEIGHTS = {}
 
 @app.on_event("startup")
 def _load_models_on_startup():
-    """Carga modelos .pkl y weights.json de server/models una vez al arrancar."""
-    import glob, os
     global MODELS, WEIGHTS
     models_dir = os.path.join(os.path.dirname(__file__), "models")
     weights_path = os.path.join(models_dir, "weights.json")
@@ -43,7 +41,6 @@ def _load_models_on_startup():
     MODELS = []
     WEIGHTS = {}
 
-    # Cargar pesos (si no existe, usar 0.5/0.5)
     if os.path.exists(weights_path):
         with open(weights_path, "r") as f:
             WEIGHTS.update(json.load(f))

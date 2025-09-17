@@ -18,7 +18,6 @@ from warnings import filterwarnings
 
 filterwarnings("ignore")
 
-
 class EnsembleModel:
     def __init__(self, rstate):
         self.weights = None
