@@ -61,13 +61,11 @@ def _load_models_on_startup():
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
 @app.post("/predict-app")
 def predict_app(
     data: Union[Dict[str, Any], List[Dict[str, Any]]] = Body(...)
 ):
-    """Predice con modelos locales en ./server/models.
-    Acepta un objeto JSON o una lista de objetos.
-    """
     try:
         # Validar payload
         if isinstance(data, dict):
@@ -84,6 +82,27 @@ def predict_app(
         # Features
         fe_df = make_features(df_in)
 
+        MODELS = []
+        WEIGHTS = {}
+
+        # leer los PKL de ./models
+        models_dir = os.path.join(os.path.dirname(__file__), "models")
+        weights_path = os.path.join(models_dir, "weights.json")
+
+        if os.path.exists(weights_path):
+            with open(weights_path, "r") as f:
+                WEIGHTS.update(json.load(f))
+        else:
+            WEIGHTS.update({"elasticnet": 0.5, "lgbm": 0.5})
+
+        # Cargar modelos .pkl (orden determinista por nombre)
+        for mf in sorted(glob.glob(os.path.join(models_dir, "*.pkl"))):
+            try:
+                with open(mf, "rb") as fh:
+                    MODELS.append(joblib.load(fh))
+            except Exception as e:
+                print(f"[startup] Warning: no se pudo cargar {mf}: {type(e).__name__}: {e}")
+
         # Modelos cargados
         if not MODELS:
             raise HTTPException(status_code=500, detail="Modelos no cargados: sube .pkl a server/models y redeploy")
@@ -92,6 +111,11 @@ def predict_app(
             raise HTTPException(status_code=500, detail="Faltan modelos .pkl (se esperan al menos 2)")
 
         # Pesos
+        if not WEIGHTS:
+            w_el = float(WEIGHTS.get("elasticnet", 0.5))
+            w_lg = float(WEIGHTS.get("lgbm", 0.5))
+        
+        # leer pesos del json
         w_el = float(WEIGHTS.get("elasticnet", 0.5))
         w_lg = float(WEIGHTS.get("lgbm", 0.5))
 

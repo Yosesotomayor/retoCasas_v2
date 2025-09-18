@@ -1,5 +1,5 @@
 # ===== Configuración =====
-COMPOSE_FILE := docker-compose.override.yml
+COMPOSE_FILE := docker-compose.yml
 SERVICE      := server-backend
 
 # ===== Utilidades =====
