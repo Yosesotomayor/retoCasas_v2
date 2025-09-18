@@ -229,11 +229,17 @@ def predict(
         raise HTTPException(status_code=500, detail=f"Error al predecir: {type(e).__name__}: {str(e)[:200]}")
     
 @app.post("/users/")
-async def create_user(nombre: str, email: str, password_hash: str, fecha_registro: str, tel: str):
+async def create_user(data: dict = Body(...)):
     """
     Endpoint para crear un nuevo usuario.
     """
     try:
+        nombre = data.get("nombre")
+        email = data.get("email")
+        password_hash = data.get("password_hash")
+        fecha_registro = data.get("fecha_registro")
+        tel = data.get("tel")
+        
         await Database.create_user(nombre, email, password_hash, fecha_registro, tel)
         return {"message": "Usuario creado exitosamente"}
     except Exception as e:
@@ -265,11 +271,18 @@ async def update_user(user_id: int, updates: dict):
 
 
 @app.post("/payments/")
-async def create_payment(id_usuario: int, monto: float, fecha_pago: str, metodo_pago: str, estatus: str, id_transac_externa: str):
+async def create_payment(data: dict = Body(...)):
     """
     Endpoint para crear un nuevo pago.
     """
     try:
+        id_usuario = data.get("id_usuario")
+        monto = data.get("monto")
+        fecha_pago = data.get("fecha_pago")
+        metodo_pago = data.get("metodo_pago")
+        estatus = data.get("estatus")
+        id_transac_externa = data.get("id_transac_externa")
+
         await Database.create_payment(id_usuario, monto, fecha_pago, metodo_pago, estatus, id_transac_externa)
         return {"message": "Pago creado exitosamente"}
     except Exception as e:
@@ -301,11 +314,16 @@ async def update_payment(payment_id: int, updates: dict):
 
 
 @app.post("/consultas/")
-async def create_consulta(id_usuario: int, fecha_consulta: str, datos_entrada: str, prediccion: float):
+async def create_consulta(data: dict = Body(...)):
     """
     Endpoint para crear una nueva consulta.
     """
     try:
+        id_usuario = data.get("id_usuario")
+        fecha_consulta = data.get("fecha_consulta")
+        datos_entrada = data.get("datos_entrada")
+        prediccion = data.get("prediccion")
+
         await Database.create_consulta(id_usuario, fecha_consulta, datos_entrada, prediccion)
         return {"message": "Consulta creada exitosamente"}
     except Exception as e:

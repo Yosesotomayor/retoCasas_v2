@@ -79,7 +79,7 @@ class Database:
 
         async with Database._instance.engine.begin() as conn:
             # Elimina las tablas existentes (opcional)
-            await conn.run_sync(Base.metadata.drop_all)
+            #await conn.run_sync(Base.metadata.drop_all)
 
             # Crea las tablas
             await conn.run_sync(Base.metadata.create_all)
