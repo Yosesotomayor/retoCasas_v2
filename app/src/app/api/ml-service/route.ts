@@ -36,7 +36,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const ML_SERVICE_URL = process.env.ML_SERVICE_URL as string;
-  const target = `${ML_SERVICE_URL}/predict-app`;
+  const target = `${ML_SERVICE_URL}predict-app`;
   try {
     const body = await req.json();
     const r = await fetch(target, {

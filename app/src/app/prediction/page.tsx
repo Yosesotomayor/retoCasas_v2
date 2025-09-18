@@ -218,32 +218,28 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, isExpand
   </div>
 );
 
-// Función para obtener datos del ML Service desde el cliente
+// Función para obtener datos del ML Service a través de la API route
 async function fetchMLService() {
-    const ML_SERVICE_URL = process.env.ML_SERVICE_URL as string;
-    const API_URL = `${ML_SERVICE_URL}api/ml-service`;
-
-  
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(`/api/ml-service`, {
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       throw new Error(`API Service error! status: ${response.status}`);
     }
-    
-    const data = await response.text();
-    return { success: true, data, error: null, serviceUrl: API_URL };
+
+    const result = await response.json();
+    return result;
   } catch (error) {
-    return { 
-      success: false, 
-      data: null, 
+    return {
+      success: false,
+      data: null,
       error: error instanceof Error ? error.message : 'Unknown error',
-      serviceUrl: API_URL
+      serviceUrl: '/api/ml-service'
     };
   }
 }
