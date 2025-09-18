@@ -42,18 +42,11 @@ async def lifespan(_: FastAPI):
     try:
         database_url = os.getenv("DATABASE_URL")
         Database.initialize(database_url)
-        logger.info("Database initialized")
-
         await Database.wait_for_connection()
-        logger.info("Database connected")
-
-        await Database.create_tables()
-        logger.info("Tables created")
-
-        logger.info("Application started")
+        await Database.create_tables()  # Asegúrate de que este método se llame
     except Exception as e:
-        logger.error(f"Startup failed: {e}")
-        raise
+        logger.error(f"Error during startup: {e}")
+        raise e
 
     yield
 
