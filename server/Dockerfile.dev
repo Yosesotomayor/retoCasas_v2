@@ -23,8 +23,10 @@ COPY server/pyproject.toml server/uv.lock ./server/
 RUN --mount=type=cache,target=/root/.cache/uv \
     cd server && uv sync --frozen --no-install-project
 
-# Ahora sí copiamos el resto del código (no invalida la capa de deps)
-COPY . /app
+# Ahora sí copiamos solo lo necesario (no invalida la capa de deps)
+COPY server/ /app/server/
+COPY utils/ /app/utils/
+COPY data/ /app/data/
 
 # Install the project
 RUN --mount=type=cache,target=/root/.cache/uv \

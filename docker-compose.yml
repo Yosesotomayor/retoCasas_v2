@@ -1,14 +1,10 @@
 services:
   server:
-    image: zamcv/house-server:v0.0.2
+    image: zamcv/house-server:v0.0.3
     ports:
       - "8000:8000"
     env_file:
       - .env
-    volumes:
-    - ./server:/app/server
-    - ./utils:/app/utils:ro
-    - ./data:/app/data:ro
     restart: unless-stopped
     networks:
       - app-network
