@@ -38,11 +38,47 @@ WEIGHTS = {}
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    # Startup
     try:
+        logger.info("Starting up application...")
         database_url = os.getenv("DATABASE_URL")
+
+        logger.info("Initializing database...")
         Database.initialize(database_url)
+
+        logger.info("Connecting to the database...")
         await Database.wait_for_connection()
+
+        logger.info("Creating tables if they do not exist...")
         await Database.create_tables()  # Asegúrate de que este método se llame
+
+        logger.info("Loading models...")
+        # Load models on startup
+        global MODELS, WEIGHTS
+        models_dir = os.path.join(os.path.dirname(__file__), "models")
+        weights_path = os.path.join(models_dir, "weights.json")
+
+        MODELS = []
+        WEIGHTS = {}
+
+        if os.path.exists(weights_path):
+            with open(weights_path, "r") as f:
+                WEIGHTS.update(json.load(f))
+        else:
+            WEIGHTS.update({"elasticnet": 0.5, "lgbm": 0.5})
+
+        logger.info(f"Model weights loaded: {WEIGHTS}")
+        # Cargar modelos .pkl (orden determinista por nombre)
+        for mf in sorted(glob.glob(os.path.join(models_dir, "*.pkl"))):
+            try:
+                with open(mf, "rb") as fh:
+                    MODELS.append(joblib.load(fh))
+            except Exception as e:
+                print(f"[startup] Warning: no se pudo cargar {mf}: {type(e).__name__}: {e}")
+
+        logger.info("Modelos cargados en startup")
+        print(f"[startup] Modelos cargados={len(MODELS)}, weights={WEIGHTS}")
+
     except Exception as e:
         logger.error(f"Error during startup: {e}")
         raise e
@@ -56,30 +92,6 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="Server", version="0.1.0", lifespan=lifespan)
 
 
-@app.on_event("startup")
-def _load_models_on_startup():
-    global MODELS, WEIGHTS
-    models_dir = os.path.join(os.path.dirname(__file__), "models")
-    weights_path = os.path.join(models_dir, "weights.json")
-
-    MODELS = []
-    WEIGHTS = {}
-
-    if os.path.exists(weights_path):
-        with open(weights_path, "r") as f:
-            WEIGHTS.update(json.load(f))
-    else:
-        WEIGHTS.update({"elasticnet": 0.5, "lgbm": 0.5})
-
-    # Cargar modelos .pkl (orden determinista por nombre)
-    for mf in sorted(glob.glob(os.path.join(models_dir, "*.pkl"))):
-        try:
-            with open(mf, "rb") as fh:
-                MODELS.append(joblib.load(fh))
-        except Exception as e:
-            print(f"[startup] Warning: no se pudo cargar {mf}: {type(e).__name__}: {e}")
-
-    print(f"[startup] Modelos cargados={len(MODELS)}, weights={WEIGHTS}")
 
 
 @app.get("/")
@@ -329,7 +341,7 @@ def main():
     debug = os.getenv("DEBUG", "true").lower() == "true"
 
     uvicorn.run(
-        "app:app",
+        "main:app",
         host=host,
         port=port,
         reload=debug,

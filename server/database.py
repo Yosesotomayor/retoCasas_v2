@@ -49,20 +49,25 @@ class Database:
         return Instance(engine, session_factory)
 
     @staticmethod
-    async def wait_for_connection():
+    async def wait_for_connection(max_retries: int = 30):
         if Database._instance is None:
             raise Exception(
                 "Database not initialized. Call Database.initialize() first."
             )
 
-        while True:
+        retries = 0
+        while retries < max_retries:
             try:
+                logger.info(f"Attempting database connection (attempt {retries + 1}/{max_retries})")
                 async with Database._instance.engine.begin() as conn:
                     await conn.execute(text("SELECT 1"))
                 logger.info("Database connection established.")
-                break
+                return
             except Exception as e:
-                logger.info(f"Waiting for database connection... ({e})")
+                retries += 1
+                logger.error(f"Database connection failed (attempt {retries}/{max_retries}): {type(e).__name__}: {e}")
+                if retries >= max_retries:
+                    raise Exception(f"Failed to connect to database after {max_retries} attempts: {e}")
                 await asyncio.sleep(1)
 
     @staticmethod
