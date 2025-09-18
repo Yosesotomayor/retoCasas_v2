@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://ec2-44-204-160-132.compute-1.amazonaws.com:8000';
+  const ML_SERVICE_URL = process.env.ML_SERVICE_URL as string;
   
   try {
     const response = await fetch(ML_SERVICE_URL, {
@@ -33,8 +33,9 @@ export async function GET() {
     }, { status: 500 });
   }
 }
+
 export async function POST(req: Request) {
-  const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://ec2-44-204-160-132.compute-1.amazonaws.com:8000';
+  const ML_SERVICE_URL = process.env.ML_SERVICE_URL as string;
   const target = `${ML_SERVICE_URL}/predict-app`;
   try {
     const body = await req.json();

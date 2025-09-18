@@ -220,7 +220,8 @@ const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, isExpand
 
 // Función para obtener datos del ML Service desde el cliente
 async function fetchMLService() {
-    const API_URL = '/api/ml-service';
+    const ML_SERVICE_URL = process.env.ML_SERVICE_URL as string;
+    const API_URL = `${ML_SERVICE_URL}api/ml-service`;
 
   
   try {
@@ -272,12 +273,7 @@ export default function Prediction() {
         const mlResult = await fetchMLService();
         setResult(mlResult);
       } catch (error) {
-        setResult({
-          success: false,
-          data: null,
-          error: 'Error al cargar el servicio ML',
-          serviceUrl: 'http://ec2-18-232-61-103.compute-1.amazonaws.com:8000/'
-        });
+        console.log('Error cargando el servicio ML:', error);
       } finally {
         setLoading(false);
       }
@@ -322,7 +318,7 @@ export default function Prediction() {
         setResult({ success: true, data: resp.data, error: null, serviceUrl: '/ml-service' });
       })
       .catch(err => {
-        setResult({ success: false, data: null, error: err.message, serviceUrl: '/ml-service' });
+        console.error('Error en la predicción:', err);
       })
       .finally(() => setLoading(false));
   };
