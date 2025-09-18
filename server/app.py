@@ -30,7 +30,6 @@ MODEL_NAME = os.getenv("MODEL_NAME")
 ALIAS = os.getenv("MODEL_ALIAS")
 DATA_DIR = os.getenv("DATA_DIR", "data/housing_data/")
 
-app = FastAPI(title="Server", version="0.1.0")
 
 
 # ===== Modelos locales (para /predict-app) cargados en startup =====
@@ -330,7 +329,7 @@ def main():
     debug = os.getenv("DEBUG", "true").lower() == "true"
 
     uvicorn.run(
-        "main:app",
+        "app:app",
         host=host,
         port=port,
         reload=debug,
