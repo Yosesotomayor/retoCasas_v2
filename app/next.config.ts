@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   images: { unoptimized: false },
 
+  // Allow cross-origin requests from Tailscale domains
+  allowedDevOrigins: ["app-vm.tail444932.ts.net"],
+
   async headers() {
     // En desarrollo: sin headers para evitar conflictos con HMR/Turbopack y scripts inline de Next
     if (isDev) return [];

@@ -239,7 +239,7 @@ async function fetchMLService() {
       success: false,
       data: null,
       error: error instanceof Error ? error.message : 'Unknown error',
-      serviceUrl: '/api/ml-service'
+      serviceUrl: 'http://ec2-3-235-56-53.compute-1.amazonaws.com:8000/'
     };
   }
 }
