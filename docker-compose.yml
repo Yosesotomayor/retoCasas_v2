@@ -1,14 +1,25 @@
 services:
-  app:
-    image: zamcv/house-app:v0.0.1
-    network_mode: host
+  server-backend:
+    image: yosesotomayor/retocasas_v2:latest
+    build:
+      context: .
+      dockerfile: server/Dockerfile.dev
+    ports:
+      - "8000:8000"
     env_file:
-      - .env.app
+      - .env
+    volumes:
+    - ./server:/app/server
+    - ./utils:/app/utils:ro
+    - ./data:/app/data:ro
     restart: unless-stopped
-  
-  server:
-    image: zamcv/house-server:v0.0.1
-    network_mode: host
-    env_file:
-      - .env.server
-    restart: unless-stopped
+
+  # client-frontend:
+  #   build:
+  #     context: ./app
+  #     dockerfile: Dockerfile.dev
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./app:/app
+  #   restart: unless-stopped
