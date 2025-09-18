@@ -259,6 +259,7 @@ export default function Prediction() {
   const [session, setSession] = useState<any>(null);
   const [result, setResult] = useState<any>({ success: false, data: null, error: null, serviceUrl: '' });
   const [loading, setLoading] = useState(true);
+  const [predicting, setPredicting] = useState(false);
 
   // Efecto para cargar la sesión y el ML service
   useEffect(() => {
@@ -297,7 +298,7 @@ export default function Prediction() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    setLoading(true);
+    setPredicting(true);
     // Normalizar: enviar null en lugar de ''
     const payload: Record<string, any> = {};
     Object.entries(formData).forEach(([k, v]) => {
@@ -316,7 +317,7 @@ export default function Prediction() {
       .catch(err => {
         console.error('Error en la predicción:', err);
       })
-      .finally(() => setLoading(false));
+      .finally(() => setPredicting(false));
   };
 
   return (
@@ -342,7 +343,7 @@ export default function Prediction() {
 
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-4">Respuesta del microservicio ML</h2>
-          
+
           {loading ? (
             <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
               <p className="text-blue-800">🔄 Cargando servicio ML...</p>
@@ -353,67 +354,13 @@ export default function Prediction() {
               <pre className="whitespace-pre-wrap text-sm text-gray-800 overflow-auto max-h-96">
                 {result.data}
               </pre>
-              <form onSubmit={handleSubmit} className="mt-4">
-                {/* Formulario organizado por secciones */}
-                {Object.entries(formSections).map(([sectionKey, section]) => (
-                  <CollapsibleSection
-                    key={sectionKey}
-                    title={section.title}
-                    isExpanded={expandedSections.includes(sectionKey)}
-                    onToggle={() => toggleSection(sectionKey)}
-                  >
-                    {section.fields.map((field) => {
-                      const categoricalValues = CATEGORY_MAP[field.name];
-                      const isSelect = !!categoricalValues
-                      return (
-                        <FormField
-                          key={field.name}
-                          name={field.name}
-                          type={isSelect ? "select" : (field.type as "text" | "number")}
-                          originalType={field.type as "text" | "number"}
-
-                          label={field.label}
-                          value={formData[field.name] || ''}
-                          onChange={handleFieldChange}
-                          options={isSelect ? categoricalValues.map(v => ({ value: v, label: v })) : undefined}
-                        />
-                      );
-                    })}
-                  </CollapsibleSection>
-                ))}
-                
-                {/* Botones de acción */}
-                <div className="mt-6 flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedSections(Object.keys(formSections))}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                  >
-                    Expandir Todo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setExpandedSections([])}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                  >
-                    Colapsar Todo
-                  </button>
-                  <button
-
-                    type="submit"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Predecir Precio
-                  </button>
-                </div>
-              </form>
             </div>
           ) : (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <p className="text-red-800">
                 ❌ Error al obtener datos: {result.error}
               </p>
-              <button 
+              <button
                 onClick={() => {
                   setLoading(true);
                   fetchMLService().then(setResult).finally(() => setLoading(false));
@@ -425,6 +372,60 @@ export default function Prediction() {
             </div>
           )}
         </div>
+
+        {/* Formulario SIEMPRE visible, independiente del estado del servicio ML */}
+        <form onSubmit={handleSubmit} className="mt-4">
+          {Object.entries(formSections).map(([sectionKey, section]) => (
+            <CollapsibleSection
+              key={sectionKey}
+              title={section.title}
+              isExpanded={expandedSections.includes(sectionKey)}
+              onToggle={() => toggleSection(sectionKey)}
+            >
+              {section.fields.map((field) => {
+                const categoricalValues = CATEGORY_MAP[field.name];
+                const isSelect = !!categoricalValues;
+                return (
+                  <FormField
+                    key={field.name}
+                    name={field.name}
+                    type={isSelect ? "select" : (field.type as "text" | "number")}
+                    originalType={field.type as "text" | "number"}
+                    label={field.label}
+                    value={formData[field.name] || ''}
+                    onChange={handleFieldChange}
+                    options={isSelect ? categoricalValues.map(v => ({ value: v, label: v })) : undefined}
+                  />
+                );
+              })}
+            </CollapsibleSection>
+          ))}
+
+          {/* Botones de acción */}
+          <div className="mt-6 flex gap-4">
+            <button
+              type="button"
+              onClick={() => setExpandedSections(Object.keys(formSections))}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Expandir Todo
+            </button>
+            <button
+              type="button"
+              onClick={() => setExpandedSections([])}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Colapsar Todo
+            </button>
+            <button
+              type="submit"
+              disabled={predicting}
+              className={`px-6 py-2 text-white rounded-md transition-colors ${predicting ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+            >
+              {predicting ? 'Prediciendo…' : 'Predecir Precio'}
+            </button>
+          </div>
+        </form>
         
         <p className="text-gray-600 mb-4">
           Aquí podrás introducir los datos de una propiedad para obtener una 
