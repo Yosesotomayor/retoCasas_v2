@@ -1,6 +1,6 @@
 services:
   app:
-    image: yosesotomayor/retocasas_v2-app:v0.0.3
+    image: yosesotomayor/retocasas_v2-app:v0.0.5
     ports: ["3000:3000"]
     environment:
       - NEXT_TELEMETRY_DISABLED=1
