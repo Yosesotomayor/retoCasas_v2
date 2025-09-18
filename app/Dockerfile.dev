@@ -1,65 +1,44 @@
+# ===== Base de dependencias =====
 FROM node:22-alpine AS deps
-
-# Add libc6-compat for Alpine compatibility
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
-# Copy package files for better caching
 COPY package.json package-lock.json* ./
-# Clean install with frozen lockfile for reproducible builds
 RUN npm ci
 
-# Stage 2: Build the application
+# ===== Build de producción =====
 FROM node:22-alpine AS builder
 WORKDIR /app
-
-# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-# Copy source code
 COPY . .
-
-# Set build-time environment variables
-# Note: Runtime env vars should be provided at container runtime
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-
-# Build Next.js application with telemetry disabled
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+RUN npm run build   # <-- genera .next/standalone
 
-# Stage 3: Production runner
-FROM node:22-alpine AS runner
+# ===== Runner de producción =====
+FROM node:22-alpine AS prod-runner
 WORKDIR /app
-
-# Security: Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
-
-# Set production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Copy only necessary files for production
-# Public assets
+# Copia assets + salida standalone
 COPY --from=builder /app/public ./public
-
-# Prerender cache and build output
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Health check configuration
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {r.statusCode === 200 ? process.exit(0) : process.exit(1)})"
-
-# Security: Drop unnecessary capabilities
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+# Usuario no root
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 USER nextjs
-
-# Expose port (informational)
 EXPOSE 3000
-
-# Set proper host binding for container environment
-ENV HOSTNAME="0.0.0.0"
-ENV PORT=3000
-
-# Use node directly (not npm) for better signal handling
+ENV HOSTNAME=0.0.0.0 PORT=3000
+# En standalone se arranca con node server.js
 CMD ["node", "server.js"]
+
+# ===== Runner de desarrollo =====
+FROM node:22-alpine AS dev-runner
+WORKDIR /app
+RUN apk add --no-cache libc6-compat
+ENV NEXT_TELEMETRY_DISABLED=1
+# En dev SÍ necesitas node_modules y el código
+COPY package.json package-lock.json* ./
+RUN npm ci
+COPY . .
+EXPOSE 3000
+ENV HOSTNAME=0.0.0.0 PORT=3000
+CMD ["npm", "run", "dev"]

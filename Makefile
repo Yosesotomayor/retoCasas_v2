@@ -25,6 +25,7 @@ cfg:
 .PHONY: up-dev down-dev logs-dev rebuild-dev restart-dev shell pyver uvicornver which-py which-uvicorn curl-host curl-in healthcheck ports
 
 up-dev:
+	cd app
 	docker compose -f $(COMPOSE_FILE) up -d --build
 
 down-dev:
