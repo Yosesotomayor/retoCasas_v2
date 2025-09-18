@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
             value: 'nosniff'
           },
           {
+            key: "Content-Security-Policy",
+            value: "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline';"
+          },
+          {
             key: 'X-XSS-Protection',
             value: '1; mode=block'
           },
@@ -40,6 +44,7 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
           }
+          
         ]
       }
     ];
