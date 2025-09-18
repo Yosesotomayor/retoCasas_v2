@@ -11,6 +11,7 @@ import pandas as pd
 import glob, os
 import sys
 sys.path.append("../")
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 
 from utils.mlflow_flow import set_tracking
 from utils.utils_yose import make_features
@@ -18,8 +19,11 @@ from utils.utils_yose import make_features
 import mlflow
 from mlflow.tracking import MlflowClient
 from server.database import Database
+from contextlib import asynccontextmanager
+from config import setup_logging
 
 load_dotenv()
+logger = setup_logging()
 
 ENDPOINT_URL = os.getenv("MLFLOW_TRACKING_URI")
 MODEL_NAME = os.getenv("MODEL_NAME")
@@ -32,6 +36,33 @@ app = FastAPI(title="Server", version="0.1.0")
 # ===== Modelos locales (para /predict-app) cargados en startup =====
 MODELS = []
 WEIGHTS = {}
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    try:
+        database_url = os.getenv("DATABASE_URL")
+        Database.initialize(database_url)
+        logger.info("Database initialized")
+
+        await Database.wait_for_connection()
+        logger.info("Database connected")
+
+        await Database.create_tables()
+        logger.info("Tables created")
+
+        logger.info("Application started")
+    except Exception as e:
+        logger.error(f"Startup failed: {e}")
+        raise
+
+    yield
+
+    await Database.cleanup()
+    logger.info("Application shutdown")
+
+
+app = FastAPI(title="Server", version="0.1.0", lifespan=lifespan)
+
 
 @app.on_event("startup")
 def _load_models_on_startup():

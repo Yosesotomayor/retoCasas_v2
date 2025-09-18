@@ -1,7 +1,6 @@
 import logging
 import asyncio
 from typing import Optional
-from models import MetricModel, Base
 from sqlalchemy import text, select
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import (
@@ -15,9 +14,11 @@ from sqlalchemy.exc import NoResultFound
 from server.schemas.users import Usuario
 from server.schemas.pagos import Pago
 from server.schemas.consultas import Consulta
+from sqlalchemy.ext.declarative import declarative_base
 
 logger = logging.getLogger(__name__)
 
+Base = declarative_base()
 
 class Instance:
     def __init__(
@@ -74,7 +75,16 @@ class Database:
             )
 
         async with Database._instance.engine.begin() as conn:
+            # Verifica la conexión
+            await conn.execute(text("SELECT 1"))
+
+            # Elimina las tablas existentes (opcional)
+            await conn.run_sync(Base.metadata.drop_all)
+
+            # Crea las tablas en el orden correcto
             await conn.run_sync(Base.metadata.create_all)
+
+            logger.info("Tablas creadas correctamente.")
 
     @staticmethod
     async def cleanup():
