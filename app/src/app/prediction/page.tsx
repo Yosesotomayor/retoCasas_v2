@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { CATEGORY_MAP } from "../lib/categories";
+import { CATEGORY_MAP } from "@/lib/categories";
 
 // Configuración de secciones del formulario
 const formSections = {
