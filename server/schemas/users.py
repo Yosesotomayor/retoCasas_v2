@@ -1,8 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, UniqueConstraint, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
+from server.schemas.base import Base
 class Usuario(Base):
     __tablename__ = 'usuarios'  
 
@@ -11,7 +8,7 @@ class Usuario(Base):
     nombre = Column(String, nullable=False)  
     email = Column(String, nullable=False, unique=True)  
     password_hash = Column(String(60), nullable=False)  
-    fecha_registro = Column(Date, nullable=False) 
+    fecha_registro = Column(String, nullable=False) 
     tel = Column(String(10), nullable=False)  
 
     

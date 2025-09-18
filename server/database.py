@@ -14,11 +14,9 @@ from sqlalchemy.exc import NoResultFound
 from server.schemas.users import Usuario
 from server.schemas.pagos import Pago
 from server.schemas.consultas import Consulta
-from sqlalchemy.ext.declarative import declarative_base
+from server.schemas.base import Base
 
 logger = logging.getLogger(__name__)
-
-Base = declarative_base()
 
 class Instance:
     def __init__(
@@ -43,7 +41,7 @@ class Database:
             pool_size=10,
             max_overflow=0,
             pool_pre_ping=True,
-            echo=False,
+            echo=True,
         )
         session_factory = async_sessionmaker(
             engine, class_=AsyncSession, expire_on_commit=False
@@ -75,13 +73,10 @@ class Database:
             )
 
         async with Database._instance.engine.begin() as conn:
-            # Verifica la conexión
-            await conn.execute(text("SELECT 1"))
-
             # Elimina las tablas existentes (opcional)
             await conn.run_sync(Base.metadata.drop_all)
 
-            # Crea las tablas en el orden correcto
+            # Crea las tablas
             await conn.run_sync(Base.metadata.create_all)
 
             logger.info("Tablas creadas correctamente.")

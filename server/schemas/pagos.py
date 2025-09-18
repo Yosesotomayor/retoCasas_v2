@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, Numeric, Date, String, ForeignKey, UniqueConstraint, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from server.schemas.base import Base
 
 class Pago(Base):
     __tablename__ = 'pagos'  
