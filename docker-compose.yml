@@ -1,6 +1,6 @@
 services:
   server:
-    image: zamcv/house-server:v0.0.2
+    image: yosesotomayor/retocasas_v2-server:v0.0.3
     ports:
       - "8000:8000"
     env_file:

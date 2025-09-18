@@ -21,6 +21,9 @@ from mlflow.tracking import MlflowClient
 from server.database import Database
 from contextlib import asynccontextmanager
 from config import setup_logging
+import warnings
+
+warnings.filterwarnings("ignore")
 
 load_dotenv()
 logger = setup_logging()
