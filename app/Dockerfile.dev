@@ -7,9 +7,7 @@ WORKDIR /app
 # Copy package files for better caching
 COPY package.json package-lock.json* ./
 # Clean install with frozen lockfile for reproducible builds
-RUN npm ci --only=production && \
-    # Cache dev dependencies separately
-    npm ci --save-dev
+RUN npm ci
 
 # Stage 2: Build the application
 FROM node:22-alpine AS builder

@@ -14,12 +14,10 @@ services:
     - ./data:/app/data:ro
     restart: unless-stopped
 
-  # client-frontend:
-  #   build:
-  #     context: ./app
-  #     dockerfile: Dockerfile.dev
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./app:/app
-  #   restart: unless-stopped
+  client-frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
