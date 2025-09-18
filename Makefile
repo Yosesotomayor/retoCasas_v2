@@ -67,3 +67,10 @@ healthcheck:
 
 ports:
 	docker compose -f $(COMPOSE_FILE) port $(SERVICE) 8000 || true
+
+push-server:
+	docker buildx build --platform linux/amd64,linux/arm64 -t yosesotomayor/retocasas_v2-server:v{v} --push -f server/Dockerfile.dev . 
+
+push-app:
+	cd app
+	docker buildx build --platform linux/amd64,linux/arm64 -t yosesotomayor/retocasas_v2-app:v{v} --push -f Dockerfile.dev .
