@@ -8,7 +8,6 @@ import glob
 import sys
 sys.path.append("../")
 
-from database import Database
 from contextlib import asynccontextmanager
 from config import setup_logging
 import routes
@@ -27,18 +26,6 @@ WEIGHTS = {}
 async def lifespan(_: FastAPI):
     # Startup
     try:
-        logger.info("Starting up application...")
-        database_url = os.getenv("DATABASE_URL")
-
-        logger.info("Initializing database...")
-        Database.initialize(database_url)
-
-        logger.info("Connecting to the database...")
-        await Database.wait_for_connection()
-
-        logger.info("Creating tables if they do not exist...")
-        await Database.create_tables()  # Asegúrate de que este método se llame
-
         logger.info("Loading models...")
         # Load models on startup
         global MODELS, WEIGHTS
@@ -72,17 +59,14 @@ async def lifespan(_: FastAPI):
 
     yield
 
-    await Database.cleanup()
     logger.info("Application shutdown")
 
 
 app = FastAPI(title="Server", version="0.1.0", lifespan=lifespan)
 
 
+app.include_router(routes.router, prefix="/api")
 
-
-# Include router
-app.include_router(routes.router)
 
 def main():
     host = os.getenv("HOST", "0.0.0.0")

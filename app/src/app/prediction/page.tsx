@@ -10,9 +10,8 @@ interface PropertyValue {
 }
 
 interface PredictionResponse {
-  price?: number;
-  properties?: PropertyValue[];
-  error?: string;
+  price: number;
+  properties: PropertyValue[];
 }
 
 export default function Prediction() {
@@ -67,8 +66,7 @@ export default function Prediction() {
   };
 
   return (
-    <main className="font-[Inter] text-[#1A1A1A] min-h-[calc(100vh-56px)]
-    bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
+    <main className="font-[Inter] text-[#1A1A1A] bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
       <div className="max-w-[800px] mx-auto px-5 py-10 lg:py-16">
 
         {/* Header */}

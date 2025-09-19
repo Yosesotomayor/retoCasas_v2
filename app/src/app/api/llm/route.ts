@@ -8,7 +8,10 @@ export async function POST(request: NextRequest) {
   const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
 
   if (!AI_SERVICE_URL) {
-    throw new Error("AI_SERVICE_URL is not defined in environment variables");
+    return NextResponse.json(
+      { error: "AI_SERVICE_URL is not defined in environment variables" },
+      { status: 500 }
+    );
   }
 
   try {
@@ -21,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${AI_SERVICE_URL}/llm`, {
+    const response = await fetch(`${AI_SERVICE_URL}/api/llm`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,8 +36,12 @@ export async function POST(request: NextRequest) {
       throw new Error(`AI Service error! status: ${response.status}`);
     }
 
-    return await response.text();
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    throw new Error(`Failed to fetch from ML Service: ${error}`);
+    return NextResponse.json(
+      { error: `Failed to fetch from ML Service: ${error}` },
+      { status: 500 }
+    );
   }
 }
