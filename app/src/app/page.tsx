@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-db";
-import logo from "@/assets/House_Price_Insights_transparent.png";
+import logo from "@/assets/DreamlandLogo_transparent.png";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -24,7 +24,7 @@ export default async function Home() {
 
         <section className="grid gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-start">
           <h1 className="font-extrabold uppercase tracking-[1.2px] leading-[1.05]
-          text-[34px] md:text-[44px] max-w-[22ch]">
+          text-[34px] md:text-[44px] max-w-[22ch] text-[#4c0e0e]">
             Analiza, predice y entiende hoy el precio de tu vivienda.
           </h1>
 
@@ -78,7 +78,7 @@ export default async function Home() {
                     href="/signup"
                     className="inline-flex items-center justify-center rounded-[10px]
                   font-extrabold uppercase tracking-[0.7px] px-5 py-3
-                  bg-[#FFD43B] text-[#1A1A1A] hover:bg-[#E6BD2F] active:translate-y-[1px] transition"
+                  bg-[#FFD43B] text-[#4c0e0e] hover:bg-[#E6BD2F] active:translate-y-[1px] transition"
                   >
                     Regístrate
                   </Link>
@@ -87,7 +87,7 @@ export default async function Home() {
                     href="/login"
                     className="inline-flex items-center justify-center rounded-[10px]
                   font-extrabold uppercase tracking-[0.7px] px-5 py-3
-                  bg-[#000000] text-[#FFD43B] hover:bg-[#1a1a1add] active:translate-y-[1px] transition"
+                  bg-[#4c0e0e] text-[#FFD43B] hover:bg-[#1a1a1add] active:translate-y-[1px] transition"
                   >
                     Inicia sesión
                   </Link>
@@ -95,7 +95,7 @@ export default async function Home() {
                 <Link
                   href="/prediction"
                   className="mt-3 w-full inline-flex items-center justify-center gap-2 rounded-[10px]
-                font-semibold px-5 py-3 text-[#1A1A1A] border border-black/20
+                font-semibold px-5 py-3 text-[#4c0e0e] border border-black/20
                 hover:border-black/40 bg-white/60 backdrop-blur-[2px] transition"
                 >
                   Predice el precio de tu vivienda <span aria-hidden>→</span>

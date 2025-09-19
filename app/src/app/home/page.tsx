@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import logo from "@/assets/House_Price_Insights_transparent.png";
+import logo from "@/assets/DreamlandLogo_transparent.png";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -23,7 +23,7 @@ export default function Home() {
       bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFD43B] mx-auto"></div>
-          <p className="mt-4 text-[#6C6F77]">Cargando...</p>
+          <p className="mt-4 text-[#4c0e0e]">Cargando...</p>
         </div>
       </main>
     );
@@ -34,7 +34,7 @@ export default function Home() {
   }
 
   return (
-    <main className="font-[Inter] text-[#1A1A1A]
+    <main className="font-[Inter] text-[#4c0e0e]
     bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
       <div className="max-w-[1200px] mx-auto px-5 py-10 lg:py-16">
         {/* Header */}
@@ -46,7 +46,7 @@ export default function Home() {
             className="w-[200px] md:w-[240px] h-auto mx-auto mb-6"
           />
           <h1 className="font-extrabold uppercase tracking-[1.2px] leading-[1.05]
-          text-[28px] md:text-[36px] mb-3">
+          text-[28px] md:text-[36px] mb-3 text-[#4c0e0e]">
             Bienvenido, {session.user?.name}
           </h1>
           <p className="text-lg text-[#6C6F77]">
@@ -64,12 +64,12 @@ export default function Home() {
           >
             <div className="flex items-center gap-4 mb-4">
               <div className="w-14 h-14 bg-[#FFD43B] rounded-[10px] flex items-center justify-center">
-                <svg className="w-7 h-7 text-[#1A1A1A]" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-7 h-7 text-[#4c0e0e]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#1A1A1A] mb-1">
+                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#4c0e0e] mb-1">
                   Predicción de Precios
                 </h3>
                 <span className="text-[11px] font-bold uppercase tracking-wide
@@ -102,11 +102,11 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#1A1A1A] mb-1">
+                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#4c0e0e] mb-1">
                   Explorar Propiedades
                 </h3>
                 <span className="text-[11px] font-bold uppercase tracking-wide
-                px-2 py-1 rounded-full bg-[rgba(26,26,26,0.1)] text-[#1A1A1A]">
+                px-2 py-1 rounded-full bg-[rgba(26,26,26,0.1)] text-[#4c0e0e]">
                   Base de Datos
                 </span>
               </div>
@@ -114,7 +114,7 @@ export default function Home() {
             <p className="text-[#6C6F77] leading-relaxed">
               Navega por nuestra amplia base de datos de propiedades con información detallada, fotos y análisis de mercado.
             </p>
-            <div className="flex items-center gap-2 mt-6 text-[#1A1A1A] font-semibold
+            <div className="flex items-center gap-2 mt-6 text-[#4c0e0e] font-semibold
             group-hover:gap-3 transition-all">
               Ver propiedades
               <span aria-hidden className="text-[#FFD43B]">→</span>
@@ -134,7 +134,7 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#1A1A1A] mb-1">
+                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#4c0e0e] mb-1">
                   Mi Suscripción
                 </h3>
                 <span className="text-[11px] font-bold uppercase tracking-wide
@@ -146,7 +146,7 @@ export default function Home() {
             <p className="text-[#6C6F77] leading-relaxed">
               Gestiona tu plan, revisa tu uso de consultas y actualiza tu método de pago desde el portal de suscripciones.
             </p>
-            <div className="flex items-center gap-2 mt-6 text-[#1A1A1A] font-semibold
+            <div className="flex items-center gap-2 mt-6 text-[#4c0e0e] font-semibold
             group-hover:gap-3 transition-all">
               Gestionar plan
               <span aria-hidden className="text-purple-500">→</span>

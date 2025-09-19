@@ -12,7 +12,7 @@ export default function Topbar() {
   };
 
   return (
-    <header className="h-14 bg-gray-800 text-white flex items-center justify-between px-5 shadow-md">
+    <header className="h-14 bg-[#4c0e0e] text-white flex items-center justify-between px-5 shadow-md">
       <Link href="/" passHref>
         <span className="flex items-center gap-2">
           <button

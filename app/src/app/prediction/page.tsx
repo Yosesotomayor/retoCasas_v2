@@ -143,7 +143,7 @@ export default function Prediction() {
 
 
   return (
-    <main className="font-[Inter] text-[#1A1A1A] bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
+    <main className="font-[Inter] text-[#4c0e0e] bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
       <div className="max-w-[800px] mx-auto px-5 py-10 lg:py-16">
         {/* Header */}
         <div className="text-center mb-6">
@@ -203,7 +203,7 @@ export default function Prediction() {
             <div>
               <label
                 htmlFor="house-description"
-                className="block text-sm font-semibold text-[#1A1A1A] mb-3"
+                className="block text-sm font-semibold text-[#4c0e0e] mb-3"
               >
                 Descripción de la propiedad
               </label>
@@ -246,7 +246,7 @@ export default function Prediction() {
             <button
               onClick={handlePredict}
               disabled={!prompt.trim() || loading || (!session && true) || (session && usageInfo?.usage.remaining === 0)}
-              className="w-full py-4 px-6 bg-[#FFD43B] text-[#1A1A1A] font-bold
+              className="w-full py-4 px-6 bg-[#FFD43B] text-[#4c0e0e] font-bold
               rounded-[10px] transition-all duration-200
               hover:bg-[#FFD43B]/90 hover:shadow-lg
               disabled:opacity-50 disabled:cursor-not-allowed
