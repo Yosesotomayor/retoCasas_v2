@@ -23,8 +23,10 @@ COPY server/pyproject.toml server/uv.lock ./server/
 RUN --mount=type=cache,target=/root/.cache/uv \
     cd server && uv sync --frozen --no-install-project
 
-# Ahora sí copiamos el resto del código (no invalida la capa de deps)
-COPY . /app
+# Ahora sí copiamos solo lo necesario (no invalida la capa de deps)
+COPY server/ /app/server/
+COPY utils/ /app/utils/
+COPY data/ /app/data/
 
 # Install the project
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -33,8 +35,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # Set environment variables
 ENV PATH="/app/server/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/app/server/src:$PYTHONPATH"
 
 EXPOSE 8000
 WORKDIR /app/server
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,443 +1,453 @@
 "use client";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
-import { CATEGORY_MAP } from "@/lib/categories";
+import React, { useState, useEffect, KeyboardEvent } from "react";
+import UsageCard from "../../components/UsageCard";
 
-// Configuración de secciones del formulario
-const formSections = {
-  property: {
-    title: "📋 Información Básica de la Propiedad",
-    fields: [
-      { name: "MSSubClass", type: "number", label: "Clase de Edificio" },
-      { name: "MSZoning", type: "text", label: "Zona" },
-      { name: "LotFrontage", type: "number", label: "Frente del Lote (ft)" },
-      { name: "LotArea", type: "number", label: "Área del Lote (sq ft)" },
-      { name: "Street", type: "text", label: "Tipo de Calle" },
-      { name: "Alley", type: "text", label: "Tipo de Callejón" },
-      { name: "LotShape", type: "text", label: "Forma del Lote" },
-      { name: "LandContour", type: "text", label: "Contorno del Terreno" },
-      { name: "Utilities", type: "text", label: "Servicios Públicos" },
-      { name: "LotConfig", type: "text", label: "Configuración del Lote" },
-      { name: "LandSlope", type: "text", label: "Pendiente del Terreno" }
-    ]
-  },
-  location: {
-    title: "📍 Ubicación y Entorno",
-    fields: [
-      { name: "Neighborhood", type: "text", label: "Vecindario" },
-      { name: "Condition1", type: "text", label: "Condición de Proximidad 1" },
-      { name: "Condition2", type: "text", label: "Condición de Proximidad 2" }
-    ]
-  },
-  building: {
-    title: "🏠 Características del Edificio",
-    fields: [
-      { name: "BldgType", type: "text", label: "Tipo de Vivienda" },
-      { name: "HouseStyle", type: "text", label: "Estilo de Casa" },
-      { name: "OverallQual", type: "number", label: "Calidad General (1-10)" },
-      { name: "OverallCond", type: "number", label: "Condición General (1-10)" },
-      { name: "YearBuilt", type: "number", label: "Año de Construcción" },
-      { name: "YearRemodAdd", type: "number", label: "Año de Remodelación" }
-    ]
-  },
-  exterior: {
-    title: "🏗️ Exterior y Estructura",
-    fields: [
-      { name: "RoofStyle", type: "text", label: "Estilo de Techo" },
-      { name: "RoofMatl", type: "text", label: "Material del Techo" },
-      { name: "Exterior1st", type: "text", label: "Material Exterior 1" },
-      { name: "Exterior2nd", type: "text", label: "Material Exterior 2" },
-      { name: "MasVnrType", type: "text", label: "Tipo de Revestimiento" },
-      { name: "MasVnrArea", type: "number", label: "Área de Revestimiento" },
-      { name: "ExterQual", type: "text", label: "Calidad Exterior" },
-      { name: "ExterCond", type: "text", label: "Condición Exterior" },
-      { name: "Foundation", type: "text", label: "Tipo de Cimentación" }
-    ]
-  },
-  basement: {
-    title: "🏠 Sótano",
-    fields: [
-      { name: "BsmtQual", type: "text", label: "Calidad del Sótano" },
-      { name: "BsmtCond", type: "text", label: "Condición del Sótano" },
-      { name: "BsmtExposure", type: "text", label: "Exposición del Sótano" },
-      { name: "BsmtFinType1", type: "text", label: "Tipo de Acabado 1" },
-      { name: "BsmtFinSF1", type: "number", label: "Área Acabada 1 (sq ft)" },
-      { name: "BsmtFinType2", type: "text", label: "Tipo de Acabado 2" },
-      { name: "BsmtFinSF2", type: "number", label: "Área Acabada 2 (sq ft)" },
-      { name: "BsmtUnfSF", type: "number", label: "Área Sin Acabar (sq ft)" },
-      { name: "TotalBsmtSF", type: "number", label: "Área Total Sótano (sq ft)" }
-    ]
-  },
-  systems: {
-    title: "⚡ Sistemas y Servicios",
-    fields: [
-      { name: "Heating", type: "text", label: "Tipo de Calefacción" },
-      { name: "HeatingQC", type: "text", label: "Calidad de Calefacción" },
-      { name: "CentralAir", type: "text", label: "Aire Acondicionado Central" },
-      { name: "Electrical", type: "text", label: "Sistema Eléctrico" }
-    ]
-  },
-  interior: {
-    title: "🛏️ Espacios Interiores",
-    fields: [
-      { name: "1stFlrSF", type: "number", label: "Área 1er Piso (sq ft)" },
-      { name: "2ndFlrSF", type: "number", label: "Área 2do Piso (sq ft)" },
-      { name: "LowQualFinSF", type: "number", label: "Área Baja Calidad (sq ft)" },
-      { name: "GrLivArea", type: "number", label: "Área Habitable (sq ft)" },
-      { name: "BsmtFullBath", type: "number", label: "Baños Completos Sótano" },
-      { name: "BsmtHalfBath", type: "number", label: "Medios Baños Sótano" },
-      { name: "FullBath", type: "number", label: "Baños Completos" },
-      { name: "HalfBath", type: "number", label: "Medios Baños" },
-      { name: "BedroomAbvGr", type: "number", label: "Dormitorios" },
-      { name: "KitchenAbvGr", type: "number", label: "Cocinas" },
-      { name: "KitchenQual", type: "text", label: "Calidad de Cocina" },
-      { name: "TotRmsAbvGrd", type: "number", label: "Total Habitaciones" },
-      { name: "Functional", type: "text", label: "Funcionalidad de la Casa" },
-      { name: "Fireplaces", type: "number", label: "Chimeneas" },
-      { name: "FireplaceQu", type: "text", label: "Calidad de Chimenea" }
-    ]
-  },
-  garage: {
-    title: "🚗 Garaje",
-    fields: [
-      { name: "GarageType", type: "text", label: "Tipo de Garaje" },
-      { name: "GarageYrBlt", type: "number", label: "Año Construcción Garaje" },
-      { name: "GarageFinish", type: "text", label: "Acabado Interior Garaje" },
-      { name: "GarageCars", type: "number", label: "Capacidad de Autos" },
-      { name: "GarageArea", type: "number", label: "Área del Garaje (sq ft)" },
-      { name: "GarageQual", type: "text", label: "Calidad del Garaje" },
-      { name: "GarageCond", type: "text", label: "Condición del Garaje" },
-      { name: "PavedDrive", type: "text", label: "Entrada Pavimentada" }
-    ]
-  },
-  outdoor: {
-    title: "🌳 Espacios Exteriores",
-    fields: [
-      { name: "WoodDeckSF", type: "number", label: "Área Deck Madera (sq ft)" },
-      { name: "OpenPorchSF", type: "number", label: "Área Porche Abierto (sq ft)" },
-      { name: "EnclosedPorch", type: "number", label: "Área Porche Cerrado (sq ft)" },
-      { name: "3SsnPorch", type: "number", label: "Área Porche 3 Estaciones (sq ft)" },
-      { name: "ScreenPorch", type: "number", label: "Área Porche con Malla (sq ft)" },
-      { name: "PoolArea", type: "number", label: "Área de Piscina (sq ft)" },
-      { name: "PoolQC", type: "text", label: "Calidad de Piscina" },
-      { name: "Fence", type: "text", label: "Tipo de Cerca" },
-      { name: "MiscFeature", type: "text", label: "Características Misceláneas" },
-      { name: "MiscVal", type: "number", label: "Valor Misceláneo ($)" }
-    ]
-  },
-  sale: {
-    title: "💰 Información de Venta",
-    fields: [
-      { name: "MoSold", type: "number", label: "Mes de Venta" },
-      { name: "YrSold", type: "number", label: "Año de Venta" },
-      { name: "SaleType", type: "text", label: "Tipo de Venta" },
-      { name: "SaleCondition", type: "text", label: "Condición de Venta" }
-    ]
-  }
-};
-
-// Componente para campos individuales
-interface FormFieldProps {
+interface PropertyValue {
   name: string;
-  type: "text" | "number" | "select";
-  label: string;
-  value: string | number;
-  onChange: (name: string, value: string | number) => void;
-  options?: { value: string | number; label: string }[];
-  originalType?: "text" | "number";
+  value: any;
 }
 
-const FormField: React.FC<FormFieldProps> = ({ name, type, label, value, onChange, options, originalType }) => {
-  if (type === "select") {
-    return (
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-        <select
-          name={name}
-          value={value === undefined ? "" : value}
-          onChange={(e) => {
-            let v: string | number = e.target.value;
-            if (originalType === "number" && /^\d+$/.test(v)) v = Number(v);
-            onChange(name, v);
-          }}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-        >
-          <option value="">-- Seleccionar --</option>
-          {options?.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </div>
-    );
-  }
-  return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={(e) => onChange(name, type === 'number' ? Number(e.target.value) : e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        placeholder={label}
-      />
-    </div>
-  );
-};
-
-// Componente para secciones colapsables
-interface CollapsibleSectionProps {
-  title: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
+interface PredictionResponse {
+  price: number;
+  properties: PropertyValue[];
+  usageInfo?: {
+    limit: number;
+    used: number;
+    remaining: number;
+    subscriptionType: string;
+    resetDate: string;
+  };
 }
 
-const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, isExpanded, onToggle, children }) => (
-  <div className="border border-gray-200 rounded-lg mb-4">
-    <button
-      type="button"
-      onClick={onToggle}
-      className="w-full px-4 py-3 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg border-b border-gray-200 flex items-center justify-between transition-colors"
-    >
-      <span className="font-medium text-gray-900">{title}</span>
-      <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-        ▼
-      </span>
-    </button>
-    {isExpanded && (
-      <div className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {children}
-        </div>
-      </div>
-    )}
-  </div>
-);
-
-// Función para obtener datos del ML Service a través de la API route
-async function fetchMLService() {
-  try {
-    const response = await fetch(`/api/ml-service`, {
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Service error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    return {
-      success: false,
-      data: null,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      serviceUrl: 'http://ec2-3-235-56-53.compute-1.amazonaws.com:8000/'
-    };
-  }
+interface UsageInfo {
+  subscription: {
+    type: "FREE" | "BASIC" | "PREMIUM";
+    status: string;
+    currentPeriodEnd?: string;
+  };
+  usage: {
+    limit: number;
+    used: number;
+    remaining: number;
+    resetDate: string;
+  };
 }
-// funcion para ver la respuesta en la consola de la prediccion
-const logPredictionResponse = (response: any) => {
-  console.log('Respuesta de la predicción:', response);
-};
 
 export default function Prediction() {
-  // Estado para controlar qué secciones están expandidas
-  const [expandedSections, setExpandedSections] = useState<string[]>(['property']);
-  
-  // Estado para los valores del formulario
-  const [formData, setFormData] = useState<Record<string, string | number>>({});
+  const { data: session } = useSession();
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<PredictionResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [showAllProperties, setShowAllProperties] = useState(false);
+  const [usageInfo, setUsageInfo] = useState<UsageInfo | null>(null);
+  const [usageCardData, setUsageCardData] = useState<any>(null);
 
-  // Estado para sesión y resultado del ML service
-  const [session, setSession] = useState<any>(null);
-  const [result, setResult] = useState<any>({ success: false, data: null, error: null, serviceUrl: '' });
-  const [loading, setLoading] = useState(true);
-  const [predicting, setPredicting] = useState(false);
-
-  // Efecto para cargar la sesión y el ML service
+  // Fetch usage info when user is loaded
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        // Cargar el ML service
-        const mlResult = await fetchMLService();
-        setResult(mlResult);
-      } catch (error) {
-        console.log('Error cargando el servicio ML:', error);
-      } finally {
-        setLoading(false);
+    if (session?.user) {
+      fetchUsageInfo();
+    }
+  }, [session]);
+
+  const fetchUsageInfo = async () => {
+    try {
+      const response = await fetch("/api/usage");
+      if (response.ok) {
+        const data = await response.json();
+        setUsageInfo(data);
+        setUsageCardData(data); // Also update usage card data
       }
-    };
-
-    loadData();
-  }, []);
-
-  // Función para alternar la expansión de secciones
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => 
-      prev.includes(section) 
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    );
+    } catch (error) {
+      console.error("Error fetching usage info:", error);
+    }
   };
 
-  // Función para manejar cambios en los campos
-  const handleFieldChange = (name: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handlePredict = async () => {
+    if (!prompt.trim()) return;
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setShowAllProperties(false);
+
+    try {
+      const response = await fetch("/api/llm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: prompt.trim() }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Handle usage limit exceeded
+      if (!response.ok && response.status === 429) {
+        setError(`Has alcanzado tu límite diario de ${data.usageInfo.limit} consultas. ${
+          data.usageInfo.subscriptionType === "FREE"
+            ? "Actualiza tu plan para obtener más consultas."
+            : "Las consultas se reinician mañana."
+        }`);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      setResult(data);
+
+      // Update usage info if returned
+      if (data.usageInfo) {
+        setUsageInfo(prev => prev ? {
+          ...prev,
+          usage: {
+            ...prev.usage,
+            used: data.usageInfo.used,
+            remaining: data.usageInfo.remaining,
+          }
+        } : null);
+
+        // Also update usage card data immediately
+        setUsageCardData(prev => prev ? {
+          ...prev,
+          user: {
+            ...prev.user,
+            monthlyUsage: data.usageInfo.used,
+            remainingUsage: data.usageInfo.remaining,
+            canMakeRequest: data.usageInfo.remaining > 0,
+          }
+        } : null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    setPredicting(true);
-    // Normalizar: enviar null en lugar de ''
-    const payload: Record<string, any> = {};
-    Object.entries(formData).forEach(([k, v]) => {
-      payload[k] = (v === '' ? null : v);
-    });
-    fetch('/api/ml-service', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(async (res) => {
-        const resp = await res.json().catch(() => ({}));
-        if (!res.ok || !resp.success) throw new Error(resp.error || `Status ${res.status}`);
-        setResult({ success: true, data: resp.data, error: null, serviceUrl: '/ml-service' });
-      })
-      .catch(err => {
-        console.error('Error en la predicción:', err);
-      })
-      .finally(() => setPredicting(false));
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !loading) {
+      e.preventDefault();
+      handlePredict();
+    }
   };
+
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Predicción del Precio de Vivienda</h1>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        {session ? (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-green-800 font-medium">
-              ✅ Bienvenido, {session.user?.name}! Tienes acceso a la predicción de precios.
-            </p>
-          </div>
-        ) : (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-blue-800 font-medium">
-              ℹ️ Puedes usar la predicción sin iniciar sesión, pero te recomendamos 
-              <Link href="/login" className="underline ml-1">iniciar sesión</Link> 
-              {" "}para acceder a todas las funcionalidades.
-            </p>
+    <main className="font-[Inter] text-[#4c0e0e] bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
+      <div className="max-w-[800px] mx-auto px-5 py-10 lg:py-16">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1
+            className="font-extrabold uppercase tracking-[1.2px] leading-[1.05]
+          text-[28px] md:text-[36px] mb-4"
+          >
+            Predicción de Precios
+          </h1>
+          <p className="text-lg text-[#6C6F77] mb-8">
+            Describe la propiedad y obtén una estimación de precio al instante
+          </p>
+
+          {/* Auth Status */}
+          {session ? (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+              <div
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/80
+              border border-green-200/50 rounded-[10px] backdrop-blur-sm"
+              >
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-green-700 font-medium text-sm">
+                  Conectado como {session.user?.name}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="inline-flex items-center gap-3 px-4 py-2 bg-white/80
+            border border-blue-200/50 rounded-[10px] backdrop-blur-sm mb-4"
+            >
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-blue-700 font-medium text-sm">
+                Modo invitado •{" "}
+                <Link href="/login" className="underline hover:no-underline">
+                  Iniciar sesión
+                </Link>
+              </span>
+            </div>
+          )}
+
+        </div>
+
+        {/* Usage Card */}
+        {session && (
+          <div className="mb-6">
+            <UsageCard externalUsage={usageCardData} />
           </div>
         )}
 
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Respuesta del microservicio ML</h2>
-
-          {loading ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <p className="text-blue-800">🔄 Cargando servicio ML...</p>
-            </div>
-          ) : result.success ? (
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Respuesta del modelo ML ({result.serviceUrl}):</h3>
-              <pre className="whitespace-pre-wrap text-sm text-gray-800 overflow-auto max-h-96">
-                {result.data}
-              </pre>
-            </div>
-          ) : (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <p className="text-red-800">
-                ❌ Error al obtener datos: {result.error}
-              </p>
-              <button
-                onClick={() => {
-                  setLoading(true);
-                  fetchMLService().then(setResult).finally(() => setLoading(false));
-                }}
-                className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+        {/* Input Section */}
+        <div
+          className="w-full rounded-[14px] bg-white border border-black/10
+        ring-1 ring-black/5 shadow-[0_10px_26px_rgba(0,0,0,0.10)] p-8 mb-6"
+        >
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="house-description"
+                className="block text-sm font-semibold text-[#4c0e0e] mb-3"
               >
-                🔄 Reintentar
-              </button>
+                Descripción de la propiedad
+              </label>
+              <div className="relative">
+                <textarea
+                  id="house-description"
+                  value={prompt}
+                  onChange={(e) => {
+                    setPrompt(e.target.value);
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = "56px";
+                    const maxHeight = 120;
+                    const newHeight = Math.min(target.scrollHeight, maxHeight);
+                    target.style.height = newHeight + "px";
+                  }}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                  placeholder="Ej: Casa de 3 habitaciones, 2 baños, 150m², con jardín en Madrid centro..."
+                  rows={1}
+                  className="w-full px-4 py-4 text-[#1A1A1A] placeholder-[#6C6F77]
+                  border border-black/20 rounded-[10px] bg-white resize-none
+                  focus:outline-none focus:ring-2 focus:ring-[#FFD43B] focus:border-transparent
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  leading-6"
+                  style={{
+                    minHeight: "56px",
+                    maxHeight: "120px",
+                    overflowY:
+                      prompt && prompt.length > 150 ? "auto" : "hidden",
+                  }}
+                />
+                {loading && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-[#FFD43B] border-t-transparent"></div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Formulario SIEMPRE visible, independiente del estado del servicio ML */}
-        <form onSubmit={handleSubmit} className="mt-4">
-          {Object.entries(formSections).map(([sectionKey, section]) => (
-            <CollapsibleSection
-              key={sectionKey}
-              title={section.title}
-              isExpanded={expandedSections.includes(sectionKey)}
-              onToggle={() => toggleSection(sectionKey)}
-            >
-              {section.fields.map((field) => {
-                const categoricalValues = CATEGORY_MAP[field.name];
-                const isSelect = !!categoricalValues;
-                return (
-                  <FormField
-                    key={field.name}
-                    name={field.name}
-                    type={isSelect ? "select" : (field.type as "text" | "number")}
-                    originalType={field.type as "text" | "number"}
-                    label={field.label}
-                    value={formData[field.name] || ''}
-                    onChange={handleFieldChange}
-                    options={isSelect ? categoricalValues.map(v => ({ value: v, label: v })) : undefined}
-                  />
-                );
-              })}
-            </CollapsibleSection>
-          ))}
-
-          {/* Botones de acción */}
-          <div className="mt-6 flex gap-4">
             <button
-              type="button"
-              onClick={() => setExpandedSections(Object.keys(formSections))}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+              onClick={handlePredict}
+              disabled={!prompt.trim() || loading || (!session && true) || (session && usageInfo?.usage.remaining === 0)}
+              className="w-full py-4 px-6 bg-[#FFD43B] text-[#4c0e0e] font-bold
+              rounded-[10px] transition-all duration-200
+              hover:bg-[#FFD43B]/90 hover:shadow-lg
+              disabled:opacity-50 disabled:cursor-not-allowed
+              focus:outline-none focus:ring-2 focus:ring-[#FFD43B] focus:ring-offset-2"
             >
-              Expandir Todo
-            </button>
-            <button
-              type="button"
-              onClick={() => setExpandedSections([])}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Colapsar Todo
-            </button>
-            <button
-              type="submit"
-              disabled={predicting}
-              className={`px-6 py-2 text-white rounded-md transition-colors ${predicting ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-            >
-              {predicting ? 'Prediciendo…' : 'Predecir Precio'}
+              {loading ? "Analizando..." :
+               !session ? "Inicia sesión para predecir" :
+               usageInfo?.usage.remaining === 0 ? "Sin consultas disponibles" :
+               "Obtener Predicción"}
             </button>
           </div>
-        </form>
-        
-        <p className="text-gray-600 mb-4">
-          Aquí podrás introducir los datos de una propiedad para obtener una 
-          predicción de su precio usando nuestro modelo de machine learning.
-        </p>
-        
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-          <p className="text-yellow-800">
-            🚧 Función en desarrollo - Próximamente disponible
+        </div>
+
+        {/* Results Section */}
+        {error && (
+          <div
+            className="w-full rounded-[14px] bg-white border border-red-200
+          ring-1 ring-red-100 shadow-[0_10px_26px_rgba(0,0,0,0.10)] p-6 mb-8"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">!</span>
+              </div>
+              <h3 className="font-bold text-red-800">Error en la predicción</h3>
+            </div>
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+
+        {result && !error && (
+          <div className="space-y-6">
+            {/* Price Result */}
+            {result.price && (
+              <div
+                className="relative w-full rounded-[20px]
+              bg-gradient-to-br from-gray-700 via-gray-900 to-black
+              border border-[#FFD43B]/30 shadow-[0_20px_40px_rgba(0,0,0,0.25)] p-10 overflow-hidden"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 50%, #0A0A0A 100%)",
+                }}
+              >
+                {/* Background decoration */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#FFD43B]/10 to-transparent rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-[#FFD43B]/5 to-transparent rounded-full blur-xl"></div>
+
+                <div className="relative text-center">
+                  <div className="inline-flex items-center gap-2 mb-4">
+                    <div className="w-3 h-3 bg-[#FFD43B] rounded-full animate-pulse"></div>
+                    <h3 className="font-bold uppercase tracking-[1px] text-[#FFD43B] text-sm">
+                      Precio Estimado
+                    </h3>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="flex items-center justify-center gap-1 text-white mb-2">
+                      <span className="text-4xl md:text-5xl font-black">$</span>
+                      <span className="text-6xl md:text-7xl font-black tracking-tight">
+                        {result.price.toLocaleString("en-US")}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-[#FFD43B]"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-gray-300 text-sm font-medium">
+                      Estimación basada en machine learning
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Properties */}
+            {result.properties && result.properties.length > 0 && (
+              <div
+                className="w-full rounded-[16px] bg-white border border-black/10
+              ring-1 ring-black/5 shadow-[0_10px_26px_rgba(0,0,0,0.10)] p-8"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#FFD43B] to-[#FFD43B]/80 rounded-lg flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-[#1A1A1A]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m9-9V7a2 2 0 00-2-2h-2m0 0V3a2 2 0 00-2-2H9a2 2 0 00-2 2v2m8 0h2a2 2 0 012 2v6a2 2 0 01-2 2h-2"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-[#1A1A1A] text-lg">
+                    Características Analizadas
+                  </h3>
+                  <div className="ml-auto px-3 py-1 bg-[#F4F4F6] rounded-full">
+                    <span className="text-xs font-semibold text-[#6C6F77]">
+                      {result.properties.length} items
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {(showAllProperties
+                    ? result.properties
+                    : result.properties.slice(0, 8)
+                  ).map((property, index) => (
+                    <div
+                      key={index}
+                      className="group p-3 bg-gradient-to-br from-[#F8F9FA] to-[#F4F4F6]
+                    rounded-lg border border-black/5 hover:border-[#FFD43B]/30 transition-all duration-200
+                    hover:shadow-md hover:scale-[1.02]"
+                    >
+                      <div
+                        className="text-xs font-semibold text-[#6C6F77] mb-1 truncate"
+                        title={property.name}
+                      >
+                        {property.name}
+                      </div>
+                      <div
+                        className="text-sm font-bold text-[#1A1A1A] truncate"
+                        title={String(property.value)}
+                      >
+                        {typeof property.value === "number"
+                          ? property.value.toLocaleString("en-US")
+                          : String(property.value)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {result.properties.length > 8 && (
+                  <div className="mt-4 text-center">
+                    <button
+                      onClick={() => setShowAllProperties(!showAllProperties)}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#6C6F77]
+                      hover:text-[#1A1A1A] transition-colors rounded-lg hover:bg-[#F4F4F6]"
+                    >
+                      {showAllProperties ? (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 15l7-7 7 7"
+                            />
+                          </svg>
+                          Mostrar menos
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                          Ver {result.properties.length - 8} características más
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Help Text */}
+        <div className="text-center mt-12">
+          <p className="text-[#6C6F77] text-sm">
+            Presiona{" "}
+            <kbd className="px-2 py-1 bg-white border border-black/20 rounded text-xs font-mono">
+              Enter
+            </kbd>{" "}
+            o haz clic en el botón para obtener tu predicción
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

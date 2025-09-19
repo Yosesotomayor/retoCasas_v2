@@ -6,7 +6,7 @@ function makeNonce() {
   return Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("base64");
 }
 
-export function middleware(req: NextRequest) {
+export function middleware(_req: NextRequest) {
   const res = NextResponse.next();
   const nonce = makeNonce();
 
@@ -14,7 +14,7 @@ export function middleware(req: NextRequest) {
 
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' blob:`,
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "connect-src 'self' https://* wss://*",

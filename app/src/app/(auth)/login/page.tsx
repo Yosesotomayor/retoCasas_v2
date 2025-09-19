@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import logo from "@/assets/House_Price_Insights_transparent.png"
+import logo from "@/assets/DreamlandLogo_transparent.png"
 
 type MsgType = "ok" | "err" | null;
 
@@ -127,7 +127,7 @@ export default function LogIn() {
             type="submit"
             disabled={loading}
             className="w-full mt-2 px-4 py-3 rounded-[10px] font-extrabold uppercase tracking-[0.7px]
-              bg-[#FFD43B] text-[#1A1A1A] hover:bg-[#E6BD2F] active:translate-y-[1px] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              bg-[#FFD43B] text-[#4c0e0e] hover:bg-[#E6BD2F] active:translate-y-[1px] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Iniciando..." : "Iniciar sesión"}
           </button>

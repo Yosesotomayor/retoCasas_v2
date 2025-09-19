@@ -1,7 +1,13 @@
 import logging
 import colorlog
 
+_logger = None
+
 def setup_logging():
+    global _logger
+    if _logger is not None:
+        return _logger
+
     handler = colorlog.StreamHandler()
     handler.setFormatter(colorlog.ColoredFormatter(
         "%(log_color)s%(levelname)s%(reset)s:     %(message)s",
@@ -18,9 +24,9 @@ def setup_logging():
         style='%'
     ))
 
-    logger = logging.getLogger(__name__.split('.')[0])
-    logger.setLevel(logging.INFO)
-    logger.addHandler(handler)
-    logger.propagate = False
+    _logger = logging.getLogger(__name__.split('.')[0])
+    _logger.setLevel(logging.INFO)
+    _logger.addHandler(handler)
+    _logger.propagate = False
 
-    return logger
+    return _logger
