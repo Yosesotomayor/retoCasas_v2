@@ -55,7 +55,7 @@ export default function Home() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <Link
             href="/prediction"
             className="group w-full rounded-[14px] bg-white border border-black/10
@@ -118,6 +118,38 @@ export default function Home() {
             group-hover:gap-3 transition-all">
               Ver propiedades
               <span aria-hidden className="text-[#FFD43B]">→</span>
+            </div>
+          </Link>
+
+          <Link
+            href="/subscription"
+            className="group w-full rounded-[14px] bg-white border border-black/10
+            ring-1 ring-black/5 shadow-[0_10px_26px_rgba(0,0,0,0.10)] p-8
+            transition hover:shadow-[0_16px_32px_rgba(0,0,0,0.12)] hover:scale-[1.02]"
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-blue-600 rounded-[10px] flex items-center justify-center">
+                <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-extrabold uppercase tracking-[0.7px] text-[18px] text-[#1A1A1A] mb-1">
+                  Mi Suscripción
+                </h3>
+                <span className="text-[11px] font-bold uppercase tracking-wide
+                px-2 py-1 rounded-full bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700">
+                  {(session.user as any)?.subscription?.type || 'FREE'}
+                </span>
+              </div>
+            </div>
+            <p className="text-[#6C6F77] leading-relaxed">
+              Gestiona tu plan, revisa tu uso de consultas y actualiza tu método de pago desde el portal de suscripciones.
+            </p>
+            <div className="flex items-center gap-2 mt-6 text-[#1A1A1A] font-semibold
+            group-hover:gap-3 transition-all">
+              Gestionar plan
+              <span aria-hidden className="text-purple-500">→</span>
             </div>
           </Link>
         </div>

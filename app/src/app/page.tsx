@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth-db";
 import logo from "@/assets/House_Price_Insights_transparent.png";
 
 export default async function Home() {

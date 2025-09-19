@@ -1,6 +1,6 @@
 services:
   server:
-    image: zamcv/house-server:v0.0.8
+    image: zamcv/house-server:v0.1.0
     ports:
       - "8000:8000"
     env_file:
@@ -10,7 +10,7 @@ services:
       - app-network
 
   app:
-    image: zamcv/house-app:v0.0.9
+    image: zamcv/house-app:v0.1.0
     ports:
       - "3000:3000"
     env_file:

@@ -570,4 +570,5 @@ async def llm_query(data: Dict[str, str] = Body(...)):
         }
 
     except Exception as e:
+        logger.error(f"LLM query error: {type(e).__name__}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error en LLM query: {type(e).__name__}: {str(e)[:200]}")

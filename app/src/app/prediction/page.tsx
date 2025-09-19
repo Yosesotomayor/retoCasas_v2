@@ -2,7 +2,8 @@
 
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import React, { useState, KeyboardEvent } from "react";
+import React, { useState, useEffect, KeyboardEvent } from "react";
+import UsageCard from "../../components/UsageCard";
 
 interface PropertyValue {
   name: string;
@@ -12,6 +13,27 @@ interface PropertyValue {
 interface PredictionResponse {
   price: number;
   properties: PropertyValue[];
+  usageInfo?: {
+    limit: number;
+    used: number;
+    remaining: number;
+    subscriptionType: string;
+    resetDate: string;
+  };
+}
+
+interface UsageInfo {
+  subscription: {
+    type: "FREE" | "BASIC" | "PREMIUM";
+    status: string;
+    currentPeriodEnd?: string;
+  };
+  usage: {
+    limit: number;
+    used: number;
+    remaining: number;
+    resetDate: string;
+  };
 }
 
 export default function Prediction() {
@@ -21,6 +43,28 @@ export default function Prediction() {
   const [result, setResult] = useState<PredictionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAllProperties, setShowAllProperties] = useState(false);
+  const [usageInfo, setUsageInfo] = useState<UsageInfo | null>(null);
+  const [usageCardData, setUsageCardData] = useState<any>(null);
+
+  // Fetch usage info when user is loaded
+  useEffect(() => {
+    if (session?.user) {
+      fetchUsageInfo();
+    }
+  }, [session]);
+
+  const fetchUsageInfo = async () => {
+    try {
+      const response = await fetch("/api/usage");
+      if (response.ok) {
+        const data = await response.json();
+        setUsageInfo(data);
+        setUsageCardData(data); // Also update usage card data
+      }
+    } catch (error) {
+      console.error("Error fetching usage info:", error);
+    }
+  };
 
   const handlePredict = async () => {
     if (!prompt.trim()) return;
@@ -44,7 +88,45 @@ export default function Prediction() {
       }
 
       const data = await response.json();
+
+      // Handle usage limit exceeded
+      if (!response.ok && response.status === 429) {
+        setError(`Has alcanzado tu límite diario de ${data.usageInfo.limit} consultas. ${
+          data.usageInfo.subscriptionType === "FREE"
+            ? "Actualiza tu plan para obtener más consultas."
+            : "Las consultas se reinician mañana."
+        }`);
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
       setResult(data);
+
+      // Update usage info if returned
+      if (data.usageInfo) {
+        setUsageInfo(prev => prev ? {
+          ...prev,
+          usage: {
+            ...prev.usage,
+            used: data.usageInfo.used,
+            remaining: data.usageInfo.remaining,
+          }
+        } : null);
+
+        // Also update usage card data immediately
+        setUsageCardData(prev => prev ? {
+          ...prev,
+          user: {
+            ...prev.user,
+            monthlyUsage: data.usageInfo.used,
+            remainingUsage: data.usageInfo.remaining,
+            canMakeRequest: data.usageInfo.remaining > 0,
+          }
+        } : null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -59,14 +141,6 @@ export default function Prediction() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   return (
     <main className="font-[Inter] text-[#1A1A1A] bg-[radial-gradient(1200px_600px_at_70%_-120px,rgba(255,212,59,0.18),transparent_60%)] bg-[#F4F4F6]">
@@ -85,19 +159,21 @@ export default function Prediction() {
 
           {/* Auth Status */}
           {session ? (
-            <div
-              className="inline-flex items-center gap-3 px-4 py-2 bg-white/80
-            border border-green-200/50 rounded-[10px] backdrop-blur-sm"
-            >
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-green-700 font-medium text-sm">
-                Conectado como {session.user?.name}
-              </span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
+              <div
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/80
+              border border-green-200/50 rounded-[10px] backdrop-blur-sm"
+              >
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-green-700 font-medium text-sm">
+                  Conectado como {session.user?.name}
+                </span>
+              </div>
             </div>
           ) : (
             <div
               className="inline-flex items-center gap-3 px-4 py-2 bg-white/80
-            border border-blue-200/50 rounded-[10px] backdrop-blur-sm"
+            border border-blue-200/50 rounded-[10px] backdrop-blur-sm mb-4"
             >
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-blue-700 font-medium text-sm">
@@ -108,7 +184,15 @@ export default function Prediction() {
               </span>
             </div>
           )}
+
         </div>
+
+        {/* Usage Card */}
+        {session && (
+          <div className="mb-6">
+            <UsageCard externalUsage={usageCardData} />
+          </div>
+        )}
 
         {/* Input Section */}
         <div
@@ -161,14 +245,17 @@ export default function Prediction() {
 
             <button
               onClick={handlePredict}
-              disabled={!prompt.trim() || loading}
+              disabled={!prompt.trim() || loading || (!session && true) || (session && usageInfo?.usage.remaining === 0)}
               className="w-full py-4 px-6 bg-[#FFD43B] text-[#1A1A1A] font-bold
               rounded-[10px] transition-all duration-200
               hover:bg-[#FFD43B]/90 hover:shadow-lg
               disabled:opacity-50 disabled:cursor-not-allowed
               focus:outline-none focus:ring-2 focus:ring-[#FFD43B] focus:ring-offset-2"
             >
-              {loading ? "Analizando..." : "Obtener Predicción"}
+              {loading ? "Analizando..." :
+               !session ? "Inicia sesión para predecir" :
+               usageInfo?.usage.remaining === 0 ? "Sin consultas disponibles" :
+               "Obtener Predicción"}
             </button>
           </div>
         </div>
