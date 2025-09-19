@@ -69,9 +69,9 @@ app.include_router(routes.router, prefix="/api")
 
 
 def main():
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
-    debug = os.getenv("DEBUG", "true").lower() == "true"
+    host = os.getenv("FASTAPI_HOST", "0.0.0.0")
+    port = int(os.getenv("FASTAPI_PORT", "8000"))
+    debug = os.getenv("FASTAPI_DEBUG", "true").lower() == "true"
 
     uvicorn.run(
         "main:app",

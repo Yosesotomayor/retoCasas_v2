@@ -5,11 +5,11 @@ interface PredictionRequest {
 }
 
 export async function POST(request: NextRequest) {
-  const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
+  const APP_AI_SERVICE_URL = process.env.APP_AI_SERVICE_URL;
 
-  if (!AI_SERVICE_URL) {
+  if (!APP_AI_SERVICE_URL) {
     return NextResponse.json(
-      { error: "AI_SERVICE_URL is not defined in environment variables" },
+      { error: "APP_AI_SERVICE_URL is not defined in environment variables" },
       { status: 500 }
     );
   }
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await fetch(`${AI_SERVICE_URL}/api/llm`, {
+    const response = await fetch(`${APP_AI_SERVICE_URL}/api/llm`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

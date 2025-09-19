@@ -12,7 +12,7 @@ export default async function Houses() {
   let houses: House[] = [];
   
   try {
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
     const res = await fetch(`${baseUrl}/api/houses`, {
       cache: 'no-store'
     });
