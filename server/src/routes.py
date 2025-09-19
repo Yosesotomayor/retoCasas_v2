@@ -6,6 +6,9 @@ import json
 import numpy as np
 import pandas as pd
 import glob
+from pydantic_ai import Agent
+from pydantic_ai.models.groq import GroqModel
+from dotenv import load_dotenv
 
 from utils.mlflow_flow import set_tracking
 from utils.utils_yose import make_features
@@ -14,13 +17,21 @@ from mlflow.tracking import MlflowClient
 from database import Database
 from config import setup_logging
 
+# Load environment variables first
+load_dotenv()
+
 logger = setup_logging()
 
 ENDPOINT_URL = os.getenv("MLFLOW_TRACKING_URI")
 MODEL_NAME = os.getenv("MODEL_NAME")
 ALIAS = os.getenv("MODEL_ALIAS")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 router = APIRouter()
+
+# Initialize Groq model and agent (simple string output)
+groq_model = GroqModel("llama-3.1-8b-instant")
+llm_agent = Agent(groq_model)
 
 @router.get("/")
 def health_check():
@@ -239,3 +250,21 @@ async def update_consulta(consulta_id: int, updates: dict):
         return {"message": f"Consulta con ID {consulta_id} actualizada exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al actualizar consulta: {type(e).__name__}: {str(e)}")
+
+@router.post("/llm")
+async def llm_query(data: Dict[str, str] = Body(...)):
+    try:
+        prompt = data.get("prompt")
+        if not prompt:
+            raise HTTPException(status_code=400, detail="Prompt is required")
+
+        if not GROQ_API_KEY:
+            raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured")
+
+        result = await llm_agent.run(prompt)
+        return {
+            "response": result.output,
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en LLM query: {type(e).__name__}: {str(e)[:200]}")
