@@ -2,7 +2,6 @@ import logging
 import asyncio
 from typing import Optional
 from sqlalchemy import text, select
-from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     create_async_engine,
@@ -11,10 +10,10 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import NoResultFound
 
-from server.schemas.users import Usuario
-from server.schemas.pagos import Pago
-from server.schemas.consultas import Consulta
-from server.schemas.base import Base
+from schemas.users import Usuario
+from schemas.pagos import Pago
+from schemas.consultas import Consulta
+from schemas.base import Base
 
 logger = logging.getLogger(__name__)
 

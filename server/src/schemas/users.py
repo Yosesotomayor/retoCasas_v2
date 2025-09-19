@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, UniqueConstraint, CheckConstraint
-from server.schemas.base import Base
+from schemas.base import Base
 class Usuario(Base):
     __tablename__ = 'usuarios'  
 

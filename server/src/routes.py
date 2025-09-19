@@ -1,107 +1,32 @@
 import os
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body
 from typing import Any, Dict, List, Union
-from dotenv import load_dotenv
-import uvicorn
 import joblib
 import json
-
 import numpy as np
 import pandas as pd
-import glob, os
-import sys
-sys.path.append("../")
-#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
+import glob
 
 from utils.mlflow_flow import set_tracking
 from utils.utils_yose import make_features
-
 import mlflow
 from mlflow.tracking import MlflowClient
-from server.database import Database
-from contextlib import asynccontextmanager
+from database import Database
 from config import setup_logging
-import warnings
 
-warnings.filterwarnings("ignore")
-
-load_dotenv()
 logger = setup_logging()
 
 ENDPOINT_URL = os.getenv("MLFLOW_TRACKING_URI")
 MODEL_NAME = os.getenv("MODEL_NAME")
 ALIAS = os.getenv("MODEL_ALIAS")
-DATA_DIR = os.getenv("DATA_DIR", "data/housing_data/")
 
+router = APIRouter()
 
-
-# ===== Modelos locales (para /predict-app) cargados en startup =====
-MODELS = []
-WEIGHTS = {}
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    # Startup
-    try:
-        logger.info("Starting up application...")
-        database_url = os.getenv("DATABASE_URL")
-
-        logger.info("Initializing database...")
-        Database.initialize(database_url)
-
-        logger.info("Connecting to the database...")
-        await Database.wait_for_connection()
-
-        logger.info("Creating tables if they do not exist...")
-        await Database.create_tables()  # Asegúrate de que este método se llame
-
-        logger.info("Loading models...")
-        # Load models on startup
-        global MODELS, WEIGHTS
-        models_dir = os.path.join(os.path.dirname(__file__), "models")
-        weights_path = os.path.join(models_dir, "weights.json")
-
-        MODELS = []
-        WEIGHTS = {}
-
-        if os.path.exists(weights_path):
-            with open(weights_path, "r") as f:
-                WEIGHTS.update(json.load(f))
-        else:
-            WEIGHTS.update({"elasticnet": 0.5, "lgbm": 0.5})
-
-        logger.info(f"Model weights loaded: {WEIGHTS}")
-        # Cargar modelos .pkl (orden determinista por nombre)
-        for mf in sorted(glob.glob(os.path.join(models_dir, "*.pkl"))):
-            try:
-                with open(mf, "rb") as fh:
-                    MODELS.append(joblib.load(fh))
-            except Exception as e:
-                print(f"[startup] Warning: no se pudo cargar {mf}: {type(e).__name__}: {e}")
-
-        logger.info("Modelos cargados en startup")
-        print(f"[startup] Modelos cargados={len(MODELS)}, weights={WEIGHTS}")
-
-    except Exception as e:
-        logger.error(f"Error during startup: {e}")
-        raise e
-
-    yield
-
-    await Database.cleanup()
-    logger.info("Application shutdown")
-
-
-app = FastAPI(title="Server", version="0.1.0", lifespan=lifespan)
-
-
-
-
-@app.get("/")
+@router.get("/")
 def health_check():
     return {"status": "ok"}
 
-@app.post("/predict-app")
+@router.post("/predict-app")
 def predict_app(
     data: Union[Dict[str, Any], List[Dict[str, Any]]] = Body(...)
 ):
@@ -153,7 +78,7 @@ def predict_app(
         if not WEIGHTS:
             w_el = float(WEIGHTS.get("elasticnet", 0.5))
             w_lg = float(WEIGHTS.get("lgbm", 0.5))
-        
+
         # leer pesos del json
         w_el = float(WEIGHTS.get("elasticnet", 0.5))
         w_lg = float(WEIGHTS.get("lgbm", 0.5))
@@ -168,14 +93,8 @@ def predict_app(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en predict-app: {type(e).__name__}: {str(e)[:200]}")
-    
 
-
-
-
-
-
-@app.post('/predict')
+@router.post("/predict")
 def predict(
     data: Union[Dict[str, Any], List[Dict[str, Any]]] = Body(...)
 ):
@@ -230,54 +149,39 @@ def predict(
         return {"predictions": preds.tolist() if hasattr(preds, "tolist") else list(preds)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al predecir: {type(e).__name__}: {str(e)[:200]}")
-    
-@app.post("/users/")
+
+@router.post("/users/")
 async def create_user(data: dict = Body(...)):
-    """
-    Endpoint para crear un nuevo usuario.
-    """
     try:
         nombre = data.get("nombre")
         email = data.get("email")
         password_hash = data.get("password_hash")
         fecha_registro = data.get("fecha_registro")
         tel = data.get("tel")
-        
+
         await Database.create_user(nombre, email, password_hash, fecha_registro, tel)
         return {"message": "Usuario creado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al crear usuario: {type(e).__name__}: {str(e)}")
 
-
-@app.delete("/users/{user_id}")
+@router.delete("/users/{user_id}")
 async def delete_user(user_id: int):
-    """
-    Endpoint para eliminar un usuario por su ID.
-    """
     try:
         await Database.delete_user(user_id)
         return {"message": f"Usuario con ID {user_id} eliminado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al eliminar usuario: {type(e).__name__}: {str(e)}")
 
-
-@app.put("/users/{user_id}")
+@router.put("/users/{user_id}")
 async def update_user(user_id: int, updates: dict):
-    """
-    Endpoint para actualizar un usuario por su ID.
-    """
     try:
         await Database.update_user(user_id, **updates)
         return {"message": f"Usuario con ID {user_id} actualizado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al actualizar usuario: {type(e).__name__}: {str(e)}")
 
-
-@app.post("/payments/")
+@router.post("/payments/")
 async def create_payment(data: dict = Body(...)):
-    """
-    Endpoint para crear un nuevo pago.
-    """
     try:
         id_usuario = data.get("id_usuario")
         monto = data.get("monto")
@@ -291,36 +195,24 @@ async def create_payment(data: dict = Body(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al crear pago: {type(e).__name__}: {str(e)}")
 
-
-@app.delete("/payments/{payment_id}")
+@router.delete("/payments/{payment_id}")
 async def delete_payment(payment_id: int):
-    """
-    Endpoint para eliminar un pago por su ID.
-    """
     try:
         await Database.delete_payment(payment_id)
         return {"message": f"Pago con ID {payment_id} eliminado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al eliminar pago: {type(e).__name__}: {str(e)}")
 
-
-@app.put("/payments/{payment_id}")
+@router.put("/payments/{payment_id}")
 async def update_payment(payment_id: int, updates: dict):
-    """
-    Endpoint para actualizar un pago por su ID.
-    """
     try:
         await Database.update_payment(payment_id, **updates)
         return {"message": f"Pago con ID {payment_id} actualizado exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al actualizar pago: {type(e).__name__}: {str(e)}")
 
-
-@app.post("/consultas/")
+@router.post("/consultas/")
 async def create_consulta(data: dict = Body(...)):
-    """
-    Endpoint para crear una nueva consulta.
-    """
     try:
         id_usuario = data.get("id_usuario")
         fecha_consulta = data.get("fecha_consulta")
@@ -332,42 +224,18 @@ async def create_consulta(data: dict = Body(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al crear consulta: {type(e).__name__}: {str(e)}")
 
-
-@app.delete("/consultas/{consulta_id}")
+@router.delete("/consultas/{consulta_id}")
 async def delete_consulta(consulta_id: int):
-    """
-    Endpoint para eliminar una consulta por su ID.
-    """
     try:
         await Database.delete_consulta(consulta_id)
         return {"message": f"Consulta con ID {consulta_id} eliminada exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al eliminar consulta: {type(e).__name__}: {str(e)}")
 
-
-@app.put("/consultas/{consulta_id}")
+@router.put("/consultas/{consulta_id}")
 async def update_consulta(consulta_id: int, updates: dict):
-    """
-    Endpoint para actualizar una consulta por su ID.
-    """
     try:
         await Database.update_consulta(consulta_id, **updates)
         return {"message": f"Consulta con ID {consulta_id} actualizada exitosamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al actualizar consulta: {type(e).__name__}: {str(e)}")
-
-def main():
-    host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
-    debug = os.getenv("DEBUG", "true").lower() == "true"
-
-    uvicorn.run(
-        "main:app",
-        host=host,
-        port=port,
-        reload=debug,
-        log_level="info" if not debug else "debug",
-    )
-
-if __name__ == "__main__":
-    main()

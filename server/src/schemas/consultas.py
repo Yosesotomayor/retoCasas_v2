@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, UniqueConstraint
-from server.schemas.base import Base
+from schemas.base import Base
 
 class Consulta(Base):
     __tablename__ = 'consultas'  
