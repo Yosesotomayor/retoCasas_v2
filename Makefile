@@ -72,5 +72,9 @@ push-server:
 	docker buildx build --platform linux/amd64,linux/arm64 -t yosesotomayor/retocasas_v2-server:v{v} --push -f server/Dockerfile.dev . 
 
 push-app:
+<<<<<<< HEAD
 	cd app
 	docker buildx build --platform linux/amd64,linux/arm64 -t yosesotomayor/retocasas_v2-app:v{v} --push -f Dockerfile.dev .
+=======
+	cd app && docker buildx build --platform linux/amd64,linux/arm64 -t yosesotomayor/retocasas_v2-app:v$(v) --push -f Dockerfile.dev .
+>>>>>>> 6b9e224 (n)
