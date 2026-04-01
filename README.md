@@ -1,12 +1,11 @@
-🏡 Reto Casas — Predicción de Precios + Producto Web
+Reto Casas — Predicción de Precios + Producto Web
 
 Proyecto integral de Ciencia de Datos + Ingeniería de Software, enfocado en la predicción de precios de casas y su despliegue como aplicación web.
 
-⚙️ Instalación y uso
-🔹 Requisitos
-# HAY Q PONERLOS 
+Instalación y uso
+Requisitos---
 
-🤖 Machine Learning
+Machine Learning
 
 Modelos probados: ElasticNet, LightGBM, Ensemble.
 
@@ -14,7 +13,7 @@ Gestión de experimentos con MLflow.
 
 Outputs guardados en ML/models/ y data/housing_submissions/.
 
-🌐 Producto
+Producto
 
 Backend: expone un API REST para predicciones.
 
@@ -27,15 +26,14 @@ POST /predict
   "features": { ... }
 }
 
-📊 Reportes
+Reportes
 
 EDA Housing (reportes/Reporte EDA Housing.pdf)
 Análisis exploratorio de los datos de entrenamiento.
 
-🧑‍💻 Autor
+Autor
 
 Yose Sotomayor
 Data Science & Mathematics Engineering — Tec de Monterrey
 LinkedIn
  • GitHub
-poner sus nombres cawns
